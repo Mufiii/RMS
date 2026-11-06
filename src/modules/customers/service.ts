@@ -98,8 +98,8 @@ export async function updateCustomer(
 
 /**
  * Customers are never deleted (docs/01-requirements.md §9). Inactive customers
- * stay in history and search (filtered), but can't take new orders (Step 4).
- * Step 4 also adds: no deactivation while the customer has items out.
+ * stay in history and search (filtered), but can't take new orders, and a
+ * customer with an open order can't be deactivated.
  */
 export async function setCustomerActive(actor: Actor, id: number, active: boolean, reason: string | null) {
   return withTx(async (tx) => {
@@ -107,6 +107,11 @@ export async function setCustomerActive(actor: Actor, id: number, active: boolea
     if (locked.length === 0) throw new DomainError("customers.notFound");
     const before = await tx.customer.findUniqueOrThrow({ where: { id } });
     if (before.isActive === active) return before;
+    if (!active) {
+      // Orders lock the customer FOR SHARE when they are created, so this check can't race them.
+      const open = await tx.rentalOrder.count({ where: { customerId: id, status: "OPEN" } });
+      if (open > 0) throw new DomainError("customers.hasOpenOrders", { count: open });
+    }
     const customer = await tx.customer.update({ where: { id }, data: { isActive: active } });
     await writeAudit(tx, {
       actorId: actor.id,

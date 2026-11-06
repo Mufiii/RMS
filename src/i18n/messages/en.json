@@ -111,7 +111,9 @@
     "codeInvalid": "Use capital letters, numbers and dashes (max 20)",
     "qtyInvalid": "Enter a whole number",
     "serialTooLong": "Each serial number can be at most 40 characters",
-    "tooMany": "Too many at once (max 200)"
+    "tooMany": "Too many at once (max 200)",
+    "dateInvalid": "Enter a valid date",
+    "noItems": "Add at least one item"
   },
   "errors": {
     "unexpected": "Something went wrong. Please try again.",
@@ -132,7 +134,8 @@
     },
     "customers": {
       "notFound": "Customer not found",
-      "duplicatePhone": "This phone number is already used"
+      "duplicatePhone": "This phone number is already used",
+      "hasOpenOrders": "{count, plural, =1 {This customer has an open order} other {This customer has # open orders}} — close or cancel first"
     },
     "products": {
       "notFound": "Product not found",
@@ -156,6 +159,25 @@
       "serialExists": "Serial \"{serial}\" already exists for this product",
       "unitNotFound": "Unit not found",
       "unitWrongStatus": "Unit {serial} is {status}, so this action isn't possible"
+    },
+    "orders": {
+      "notFound": "Order not found",
+      "notOpen": "This order is not open",
+      "noItems": "Add at least one item",
+      "dateInvalid": "Enter a valid date",
+      "futureDate": "The date can't be in the future",
+      "backdateForbidden": "Only an admin can enter an earlier date",
+      "issueBeforeOpen": "Items can't be issued before the order's opening date ({date})",
+      "customerInactive": "{name} is inactive — reactivate the customer first",
+      "productInactive": "{product} is inactive",
+      "quantityRequired": "Enter a quantity for {product}",
+      "unitsRequired": "Choose the units of {product}",
+      "notEnoughStock": "Only {available} {product} available",
+      "unitNotAvailable": "Unit {serial} is not available any more",
+      "lineNotFound": "Line not found",
+      "lineAlreadyVoided": "This line is already voided",
+      "lineHasReturns": "Items on this line were already returned — it can't be voided",
+      "hasActiveLines": "{count, plural, =1 {1 line is} other {# lines are}} still active — void them first"
     }
   },
   "customers": {
@@ -216,7 +238,10 @@
       "PASSPORT": "Passport",
       "OTHER": "Other"
     },
-    "idProofNone": "— None —"
+    "idProofNone": "— None —",
+    "newOrder": "New order",
+    "ordersEmpty": "No orders yet.",
+    "itemsOutEmpty": "Nothing is out with this customer."
   },
   "products": {
     "title": "Products",
@@ -353,5 +378,83 @@
     "status": "Status",
     "ok": "OK",
     "mismatch": "Mismatch"
+  },
+  "orders": {
+    "title": "Orders",
+    "new": "New order",
+    "orderNo": "Order no.",
+    "customer": "Customer",
+    "status": "Status",
+    "statusName": {
+      "OPEN": "Open",
+      "CLOSED": "Closed",
+      "CANCELLED": "Cancelled"
+    },
+    "filterAll": "All",
+    "openedOn": "Opened",
+    "siteAddress": "Site address",
+    "notes": "Notes",
+    "date": "Date",
+    "dateHint": "Admin only: pick an earlier date to enter past records. Leave as today otherwise.",
+    "searchPlaceholder": "Order no., customer name or phone",
+    "search": "Search",
+    "results": "{count, plural, =0 {No orders} =1 {1 order} other {# orders}}",
+    "empty": "No orders yet.",
+    "noMatch": "No orders match your search.",
+    "piecesOut": "{count, plural, =0 {nothing out} =1 {1 piece out} other {# pieces out}}",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {pages}",
+    "chooseCustomer": "Choose the customer",
+    "chooseCustomerHint": "Search by name, phone or customer number.",
+    "choose": "Choose",
+    "change": "Change",
+    "noCustomers": "No active customers match.",
+    "newCustomer": "New customer",
+    "items": "Items",
+    "addItem": "Add item",
+    "removeItem": "Remove",
+    "product": "Product",
+    "chooseProduct": "Choose a product…",
+    "quantity": "Quantity",
+    "availableN": "{count} available",
+    "units": "Units",
+    "chooseUnits": "Tick the units going out",
+    "perDay": "{rate}/day",
+    "noIssuable": "Nothing is available to issue right now.",
+    "createAndIssue": "Create order",
+    "createdOrder": "Order created",
+    "issueTitle": "Add items",
+    "issue": "Issue items",
+    "issued": "Items issued",
+    "issueNotes": "Note (optional)",
+    "itemsOutTitle": "Items out",
+    "nothingOut": "Nothing is out on this order.",
+    "issuedOn": "Issued",
+    "rate": "Rate",
+    "qty": "Qty",
+    "returned": "Returned",
+    "outstanding": "Out",
+    "historyTitle": "Issues",
+    "issueBy": "Issue on {date} by {name}",
+    "backdated": "backdated",
+    "voided": "voided",
+    "voidedBy": "Voided by {name}: “{reason}”",
+    "voidLine": "Void",
+    "voidTitle": "Void a line",
+    "voidHint": "For a line entered by mistake, before anything is returned. Stock goes back.",
+    "chooseLine": "Line",
+    "lineVoided": "Line voided",
+    "cancelTitle": "Cancel order",
+    "cancelHint": "Only for an order entered by mistake. Void all its lines first.",
+    "cancel": "Cancel order",
+    "cancelled": "Order cancelled",
+    "cancelledBy": "Cancelled by {name} on {date}: “{reason}”",
+    "reason": "Reason",
+    "changesTitle": "Activity",
+    "details": "Details",
+    "createdBy": "Created by {name}",
+    "billingSoon": "Rent so far, statement and invoice come in Step 6; payments in Step 7.",
+    "customerPage": "Customer page"
   }
 }

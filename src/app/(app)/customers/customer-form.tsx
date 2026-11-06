@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export type CustomerFormDefaults = {
 };
 
 function TextArea({ label, name, defaultValue, error }: { label: string; name: string; defaultValue: string; error?: string }) {
-  const id = `f-${name}`;
+  const id = `f-${name}-${useId()}`;
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>

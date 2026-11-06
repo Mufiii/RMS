@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useId } from "react";
 import { useTranslations } from "next-intl";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +37,7 @@ function TextArea({
   hint?: string;
   rows?: number;
 }) {
-  const id = `f-${name}`;
+  const id = `f-${name}-${useId()}`;
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>

@@ -176,7 +176,7 @@ export type ReconcileRow = {
  * Recomputes every product's counters from history and compares
  * (docs/03-database-design.md §stock_movements):
  *   owned = Σ delta_owned, repair = Σ delta_repair,
- *   out   = Σ active issued − Σ active returned (0 until rentals exist, Step 4),
+ *   out   = Σ active issued − Σ active returned (issue lines),
  * and for serialised products also from unit statuses.
  */
 export async function reconcile(): Promise<ReconcileRow[]> {
@@ -190,6 +190,7 @@ export async function reconcile(): Promise<ReconcileRow[]> {
       qty_repair: number;
       ledger_owned: bigint;
       ledger_repair: bigint;
+      lines_out: bigint;
       units_owned: bigint;
       units_out: bigint;
       units_repair: bigint;
@@ -198,6 +199,7 @@ export async function reconcile(): Promise<ReconcileRow[]> {
     SELECT p.id, p.name, p.tracking::text AS tracking, p.qty_owned, p.qty_out, p.qty_repair,
       COALESCE((SELECT SUM(m.delta_owned)  FROM stock_movements m WHERE m.product_id = p.id), 0) AS ledger_owned,
       COALESCE((SELECT SUM(m.delta_repair) FROM stock_movements m WHERE m.product_id = p.id), 0) AS ledger_repair,
+      COALESCE((SELECT SUM(l.quantity - l.qty_returned) FROM issue_lines l WHERE l.product_id = p.id AND l.status = 'ACTIVE'), 0) AS lines_out,
       (SELECT COUNT(*) FROM product_units u WHERE u.product_id = p.id AND u.status NOT IN ('LOST','RETIRED')) AS units_owned,
       (SELECT COUNT(*) FROM product_units u WHERE u.product_id = p.id AND u.status = 'RENTED') AS units_out,
       (SELECT COUNT(*) FROM product_units u WHERE u.product_id = p.id AND u.status = 'UNDER_REPAIR') AS units_repair
@@ -206,9 +208,8 @@ export async function reconcile(): Promise<ReconcileRow[]> {
 
   return rows.map((r) => {
     const stored = { owned: r.qty_owned, out: r.qty_out, repair: r.qty_repair };
-    // Rentals (issue/return lines) arrive in Step 4; until then nothing can be out.
-    const expectedOut = 0;
-    const fromLedger = { owned: Number(r.ledger_owned), out: expectedOut, repair: Number(r.ledger_repair) };
+    // out = Σ (issued − returned) over active issue lines.
+    const fromLedger = { owned: Number(r.ledger_owned), out: Number(r.lines_out), repair: Number(r.ledger_repair) };
     const fromUnits =
       r.tracking === "SERIALISED"
         ? { owned: Number(r.units_owned), out: Number(r.units_out), repair: Number(r.units_repair) }

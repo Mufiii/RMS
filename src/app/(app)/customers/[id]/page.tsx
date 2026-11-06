@@ -1,27 +1,36 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { ArrowLeft, Pencil, Phone } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowLeft, Pencil, Phone, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { formatDateTime } from "@/lib/dates";
+import { formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { requirePagePermission } from "@/modules/auth/session";
 import { formatPhone } from "@/modules/customers/phone";
 import { customerAuditTrail, getCustomer } from "@/modules/customers/queries";
+import { customerItemsOut, customerOrders } from "@/modules/orders/queries";
+import { OrderStatusBadge } from "../../orders/status-badge";
 import { ToggleCustomerForm } from "./toggle-form";
 
 export default async function CustomerPage({ params, searchParams }: PageProps<"/customers/[id]">) {
   const me = await requirePagePermission("customer.read");
   const id = Number((await params).id);
   if (!Number.isInteger(id) || id <= 0) notFound();
-  const [c, trail] = await Promise.all([getCustomer(id), customerAuditTrail(id)]);
+  const [c, trail, orders, itemsOut] = await Promise.all([
+    getCustomer(id),
+    customerAuditTrail(id),
+    customerOrders(id),
+    customerItemsOut(id),
+  ]);
   if (!c) notFound();
   const { saved } = await searchParams;
   const t = await getTranslations("customers");
+  const to = await getTranslations("orders");
+  const ml = (await getLocale()) === "ml";
   const canWrite = can(me.role, "customer.write");
 
   const row = (label: string, value: ReactNode) =>
@@ -47,9 +56,15 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
               {t("call")}
             </a>
             {canWrite && (
-              <Link href={`/customers/${c.id}/edit`} className={buttonVariants({ size: "lg" })}>
+              <Link href={`/customers/${c.id}/edit`} className={buttonVariants({ variant: "outline", size: "lg" })}>
                 <Pencil />
                 {t("edit")}
+              </Link>
+            )}
+            {c.isActive && can(me.role, "order.create") && (
+              <Link href={`/orders/new?customer=${c.id}`} className={buttonVariants({ size: "lg" })}>
+                <Plus />
+                {t("newOrder")}
               </Link>
             )}
           </>
@@ -94,16 +109,54 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
             <CardTitle>{t("historyTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 text-sm">
-            {[
-              [t("outstandingTitle"), t("outstandingSoon")],
-              [t("itemsOutTitle"), t("itemsOutSoon")],
-              [t("ordersTitle"), t("ordersSoon")],
-            ].map(([title, soon]) => (
-              <section key={title}>
-                <h3 className="font-medium">{title}</h3>
-                <p className="text-muted-foreground">{soon}</p>
-              </section>
-            ))}
+            <section>
+              <h3 className="font-medium">{t("outstandingTitle")}</h3>
+              <p className="text-muted-foreground">{t("outstandingSoon")}</p>
+            </section>
+            <section data-testid="customer-items-out">
+              <h3 className="font-medium">{t("itemsOutTitle")}</h3>
+              {itemsOut.length === 0 ? (
+                <p className="text-muted-foreground">{t("itemsOutEmpty")}</p>
+              ) : (
+                <ul className="mt-1 space-y-1">
+                  {itemsOut.map((l) => (
+                    <li key={l.id} className="flex flex-wrap justify-between gap-x-3">
+                      <span>
+                        {ml && l.product.nameMl ? l.product.nameMl : l.product.name}
+                        {l.unit ? ` ${l.unit.serialNo}` : ` × ${l.quantity - l.qtyReturned}`}
+                      </span>
+                      <span className="text-muted-foreground">
+                        <Link href={`/orders/${l.order.id}`} className="underline-offset-4 hover:underline">
+                          {l.order.orderNo}
+                        </Link>{" "}
+                        · {formatDate(fromDbDate(l.issue.issueDate))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section data-testid="customer-orders">
+              <h3 className="font-medium">{t("ordersTitle")}</h3>
+              {orders.length === 0 ? (
+                <p className="text-muted-foreground">{t("ordersEmpty")}</p>
+              ) : (
+                <ul className="mt-1 space-y-1">
+                  {orders.map((o) => (
+                    <li key={o.id} className="flex flex-wrap items-center justify-between gap-x-3">
+                      <Link href={`/orders/${o.id}`} className="font-medium tabular-nums underline-offset-4 hover:underline">
+                        {o.orderNo}
+                      </Link>
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        {formatDate(fromDbDate(o.openedOn))}
+                        {o.status === "OPEN" && <span>· {to("piecesOut", { count: o.piecesOut })}</span>}
+                        <OrderStatusBadge status={o.status} label={to(`statusName.${o.status}`)} />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           </CardContent>
         </Card>
 

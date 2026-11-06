@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -73,6 +73,7 @@ export function AdjustQuantityForm({ productId }: { productId: number }) {
 export function AddUnitsForm({ productId }: { productId: number }) {
   const t = useTranslations();
   const [state, action] = useActionState(addUnitsAction, initialFormState);
+  const serialsId = useId();
   return (
     <Card>
       <CardHeader>
@@ -92,9 +93,9 @@ export function AddUnitsForm({ productId }: { productId: number }) {
             ]}
           />
           <div className="grid gap-1.5">
-            <Label htmlFor="f-serials">{t("products.serials")}</Label>
+            <Label htmlFor={serialsId}>{t("products.serials")}</Label>
             <Textarea
-              id="f-serials"
+              id={serialsId}
               name="serials"
               rows={3}
               defaultValue={state.ok ? "" : state.values?.serials}

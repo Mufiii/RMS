@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentProps, ReactNode } from "react";
+import { type ComponentProps, type ReactNode, useId } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,8 @@ export function Field({
   className,
   ...inputProps
 }: { label: string; name: string; error?: string; hint?: ReactNode } & ComponentProps<typeof Input>) {
-  const id = `f-${name}`;
+  // useId: two forms on one page may both have e.g. a "reason" field.
+  const id = `f-${name}-${useId()}`;
   return (
     <div className={cn("grid gap-1.5", className)}>
       <Label htmlFor={id}>{label}</Label>
@@ -51,7 +52,8 @@ export function SelectField({
   error?: string;
   options: { value: string; label: string }[];
 } & ComponentProps<"select">) {
-  const id = `f-${name}`;
+  // useId: two forms on one page may both have e.g. a "reason" field.
+  const id = `f-${name}-${useId()}`;
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{label}</Label>

@@ -58,12 +58,12 @@ test("quantity product: opening stock, repair, write-off and their limits", asyn
 
   await page.getByLabel("Type").selectOption("WRITE_OFF");
   await page.getByLabel("Quantity").fill("95");
-  await page.getByLabel("Reason").fill("Rusted");
+  await page.getByLabel("Reason", { exact: true }).fill("Rusted");
   await page.getByRole("button", { name: "Record" }).click();
   await fail(page, "Only 90 available");
 
   await page.getByLabel("Quantity").fill("5");
-  await page.getByLabel("Reason").fill("Rusted");
+  await page.getByLabel("Reason", { exact: true }).fill("Rusted");
   await page.getByRole("button", { name: "Record" }).click();
   await ok(page, "Stock updated");
   await expect(tile(page, "Owned")).toHaveText("95");
@@ -117,9 +117,9 @@ test("serialised product: units, repair, write-off, duplicate serials", async ({
   await page.getByLabel("Action").selectOption("WRITE_OFF");
   await page.getByRole("button", { name: "Record" }).click();
   // The reason becomes required for a write-off, so the browser blocks the submit.
-  await expect(page.getByLabel("Reason")).toHaveJSProperty("validity.valueMissing", true);
+  await expect(page.getByLabel("Reason", { exact: true })).toHaveJSProperty("validity.valueMissing", true);
   await expect(tile(page, "Owned")).toHaveText("3");
-  await page.getByLabel("Reason").fill("Stolen from site");
+  await page.getByLabel("Reason", { exact: true }).fill("Stolen from site");
   await page.getByRole("button", { name: "Record" }).click();
   await ok(page, "Unit updated");
   await expect(tile(page, "Owned")).toHaveText("2");

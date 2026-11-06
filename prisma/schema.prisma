@@ -47,8 +47,92 @@ model User {
   settingsUpdates  Settings[]
   customersCreated Customer[]
   stockMovements   StockMovement[]
+  ordersCreated    RentalOrder[]     @relation("OrderCreatedBy")
+  ordersCancelled  RentalOrder[]     @relation("OrderCancelledBy")
+  issues           Issue[]
+  linesVoided      IssueLine[]
 
   @@map("users")
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+enum LineStatus {
+  ACTIVE
+  VOIDED
+}
+
+model RentalOrder {
+  id            Int         @id @default(autoincrement())
+  orderNo       String      @unique @map("order_no")
+  customerId    Int         @map("customer_id")
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status        OrderStatus @default(OPEN)
+  siteAddress   String?     @map("site_address")
+  notes         String?
+  openedOn      DateTime    @map("opened_on") @db.Date
+  closedAt      DateTime?   @map("closed_at") @db.Timestamptz
+  cancelledById Int?        @map("cancelled_by")
+  cancelledBy   User?       @relation("OrderCancelledBy", fields: [cancelledById], references: [id], onDelete: Restrict)
+  cancelledAt   DateTime?   @map("cancelled_at") @db.Timestamptz
+  cancelReason  String?     @map("cancel_reason")
+  createdById   Int         @map("created_by")
+  createdBy     User        @relation("OrderCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  issues Issue[]
+  lines  IssueLine[]
+
+  @@index([customerId, status])
+  @@index([status, openedOn])
+  @@map("rental_orders")
+}
+
+model Issue {
+  id          Int         @id @default(autoincrement())
+  orderId     Int         @map("order_id")
+  order       RentalOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  issueDate   DateTime    @map("issue_date") @db.Date
+  isBackdated Boolean     @default(false) @map("is_backdated")
+  notes       String?
+  issuedById  Int         @map("issued_by")
+  issuedBy    User        @relation(fields: [issuedById], references: [id], onDelete: Restrict)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  lines IssueLine[]
+
+  @@index([orderId])
+  @@map("issues")
+}
+
+model IssueLine {
+  id          Int          @id @default(autoincrement())
+  issueId     Int          @map("issue_id")
+  issue       Issue        @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  orderId     Int          @map("order_id")
+  order       RentalOrder  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  productId   Int          @map("product_id")
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  unitId      Int?         @map("unit_id")
+  unit        ProductUnit? @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  quantity    Int
+  qtyReturned Int          @default(0) @map("qty_returned")
+  /// Rate snapshot at issue time; later product rate changes never affect it.
+  dailyRate   Decimal      @map("daily_rate") @db.Decimal(12, 2)
+  status      LineStatus   @default(ACTIVE)
+  voidedById  Int?         @map("voided_by")
+  voidedBy    User?        @relation(fields: [voidedById], references: [id], onDelete: Restrict)
+  voidedAt    DateTime?    @map("voided_at") @db.Timestamptz
+  voidReason  String?      @map("void_reason")
+
+  @@index([orderId])
+  @@index([issueId])
+  @@map("issue_lines")
 }
 
 enum Tracking {
@@ -105,8 +189,9 @@ model Product {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  units     ProductUnit[]
-  movements StockMovement[]
+  units      ProductUnit[]
+  movements  StockMovement[]
+  issueLines IssueLine[]
 
   @@index([categoryId])
   @@map("products")
@@ -121,7 +206,8 @@ model ProductUnit {
   notes     String?
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
 
-  movements StockMovement[]
+  movements  StockMovement[]
+  issueLines IssueLine[]
 
   @@unique([productId, serialNo])
   @@index([productId, status])
@@ -163,6 +249,8 @@ model Customer {
   createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  orders RentalOrder[]
 
   @@index([phone])
   @@index([altPhone])
