@@ -17,7 +17,7 @@ One Next.js application contains the UI, the server logic and the PDF generation
 | Framework | Next.js (App Router, latest stable) + TypeScript (strict) | `output: "standalone"` for lean deployments |
 | UI | Tailwind CSS + shadcn/ui | Mobile-first layouts |
 | Backend | Server Actions (all mutations from forms), Route Handlers (PDF download, health check, Auth.js) | |
-| Database | PostgreSQL 17 | Same major version in dev, shop PC and VPS |
+| Database | PostgreSQL 18 | Same major version in dev, shop PC and VPS |
 | ORM | Prisma | Migrations via `prisma migrate`; raw SQL only where Prisma cannot express something (row locks, CHECK constraints, partial indexes) |
 | Auth | Auth.js v5, Credentials provider (username + password), JWT session | bcrypt hashes; role in the token, re-validated against the DB |
 | Validation | Zod | One schema per input, shared by the form and the server action |

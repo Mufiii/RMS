@@ -1,4 +1,4 @@
-# Database Design – PostgreSQL 17
+# Database Design – PostgreSQL 18
 
 Status: **APPROVED** (2026-11-06)
 

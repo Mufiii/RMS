@@ -28,7 +28,7 @@ Release steps (both environments): `npm ci` → `npx prisma migrate deploy` → 
 
 | Component | Setup |
 |---|---|
-| PostgreSQL 17 | Official Windows installer, running as a Windows service. Listens on `localhost` only. |
+| PostgreSQL 18 | Official Windows installer, running as a Windows service. Listens on `localhost` only. |
 | Node.js LTS | Official installer |
 | Playwright Chromium | `npx playwright install chromium` (for PDFs) |
 | App | `next build` (standalone) run as a **Windows service via NSSM**, so it starts automatically at boot |
@@ -45,7 +45,7 @@ Trade-offs:
 
 | Component | Setup |
 |---|---|
-| PostgreSQL 17 | PGDG apt repo. Listens on `localhost` only, with a dedicated DB user. |
+| PostgreSQL 18 | PGDG apt repo. Listens on `localhost` only, with a dedicated DB user. |
 | Node.js LTS | NodeSource or nvm. Runs as an unprivileged `rms` user. |
 | Playwright Chromium | `npx playwright install --with-deps chromium` |
 | App | **systemd** service (`rms.service`), auto-restart |
