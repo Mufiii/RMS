@@ -49,6 +49,7 @@ Cardinality:
 | role | enum `ADMIN`,`STAFF` | NOT NULL |
 | locale | enum `en`,`ml` | default `en` |
 | must_change_password | bool | default true |
+| session_version | int | default 1, `CHECK (session_version >= 1)`; bumped on password reset/change, role change and deactivation to end existing sessions |
 | is_active | bool | default true |
 | last_login_at, created_at, updated_at | timestamptz | |
 

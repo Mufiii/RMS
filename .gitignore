@@ -9,3 +9,7 @@ test-results/
 !.env.example
 *.log
 backups/
+*.tsbuildinfo
+next-env.d.ts
+/src/generated/
+/.next-e2e/

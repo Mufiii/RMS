@@ -1,0 +1,126 @@
+{
+  "app": {
+    "name": "Sree Krishna Motors",
+    "tagline": "Rental Management"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No",
+    "saved": "Saved",
+    "actions": "Actions",
+    "reason": "Reason",
+    "comingSoon": "This module is built in a later step.",
+    "language": "Language",
+    "english": "English",
+    "malayalam": "മലയാളം",
+    "never": "Never"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "customers": "Customers",
+    "products": "Products",
+    "payments": "Payments",
+    "reports": "Reports",
+    "users": "Users",
+    "audit": "Audit log",
+    "settings": "Settings",
+    "logout": "Log out",
+    "more": "More"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "signIn": "Sign in",
+    "changePasswordTitle": "Change your password",
+    "changePasswordHint": "Choose a new password before you continue.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordsDontMatch": "The passwords do not match",
+    "changePassword": "Change password",
+    "forbiddenTitle": "Access denied",
+    "forbiddenBody": "Your account does not have permission to open this page.",
+    "goHome": "Go to start page",
+    "signedInAs": "Signed in as {name}"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "STAFF": "Staff"
+  },
+  "users": {
+    "title": "Users",
+    "new": "New user",
+    "fullName": "Full name",
+    "username": "Username",
+    "role": "Role",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "lastLogin": "Last login",
+    "mustChange": "Must change password",
+    "initialPassword": "Initial password",
+    "initialPasswordHint": "Give this to the user. They must change it at first login.",
+    "editTitle": "Edit user",
+    "resetPassword": "Reset password",
+    "resetPasswordHint": "Sets a temporary password and signs the user out everywhere. They must change it at next login.",
+    "temporaryPassword": "Temporary password",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateHint": "The user is signed out immediately and can no longer log in. Their history is kept.",
+    "reactivateHint": "The user can log in again with their existing password.",
+    "created": "User created",
+    "updated": "User updated",
+    "passwordReset": "Password reset",
+    "deactivated": "User deactivated",
+    "reactivated": "User reactivated",
+    "you": "you"
+  },
+  "audit": {
+    "title": "Audit log",
+    "when": "When",
+    "who": "Who",
+    "action": "Action",
+    "record": "Record",
+    "details": "Details",
+    "empty": "No audit entries yet.",
+    "system": "System",
+    "older": "Older entries"
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "validation": {
+    "required": "This field is required",
+    "tooLong": "Too long",
+    "invalid": "Invalid value",
+    "usernameLength": "Username must be 3–32 characters",
+    "usernameChars": "Use only letters, numbers, dot, dash or underscore",
+    "passwordLength": "Password must be at least {min} characters",
+    "reasonRequired": "Please enter a reason (at least 3 characters)"
+  },
+  "errors": {
+    "unexpected": "Something went wrong. Please try again.",
+    "forbidden": "You do not have permission to do this.",
+    "auth": {
+      "invalid": "Wrong username or password",
+      "locked": "Too many failed attempts. Try again in 15 minutes.",
+      "passwordTooShort": "Password must be at least {min} characters",
+      "currentPasswordWrong": "The current password is wrong",
+      "passwordUnchanged": "The new password must be different from the current one"
+    },
+    "users": {
+      "notFound": "User not found",
+      "usernameTaken": "The username \"{username}\" is already taken",
+      "lastAdmin": "There must always be at least one active admin",
+      "cannotDemoteSelf": "You cannot remove your own admin role",
+      "cannotDeactivateSelf": "You cannot deactivate your own account"
+    }
+  }
+}

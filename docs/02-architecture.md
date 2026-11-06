@@ -14,12 +14,12 @@ One Next.js application contains the UI, the server logic and the PDF generation
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Framework | Next.js (App Router, latest stable) + TypeScript (strict) | `output: "standalone"` for lean deployments |
+| Framework | Next.js 16 (App Router) + TypeScript (strict) | `output: "standalone"`. **Cache Components is off**: every screen is per-user and must show live stock and money, so request-time rendering is the safer model. |
 | UI | Tailwind CSS + shadcn/ui | Mobile-first layouts |
-| Backend | Server Actions (all mutations from forms), Route Handlers (PDF download, health check, Auth.js) | |
+| Backend | Server Actions (all mutations from forms), Route Handlers (PDF download, health check) | |
 | Database | PostgreSQL 18 | Same major version in dev, shop PC and VPS |
-| ORM | Prisma | Migrations via `prisma migrate`; raw SQL only where Prisma cannot express something (row locks, CHECK constraints, partial indexes) |
-| Auth | Auth.js v5, Credentials provider (username + password), JWT session | bcrypt hashes; role in the token, re-validated against the DB |
+| ORM | Prisma 7 (driver adapter `@prisma/adapter-pg`) | Migrations via `prisma migrate`; raw SQL only where Prisma cannot express something (row locks, CHECK constraints, partial indexes) |
+| Auth | Own small session layer: username + password, signed JWT (`jose`, HS256) in an httpOnly cookie | bcrypt hashes (`bcryptjs`, cost 12). Chosen over Auth.js v5, which is still beta and discourages the Credentials provider (decided 2026-11-06). |
 | Validation | Zod | One schema per input, shared by the form and the server action |
 | i18n | next-intl, **without** locale URL prefixes | The locale comes from the user's preference (stored on the user, mirrored in a cookie). Internal app, no SEO concerns. |
 | PDF | HTML print pages rendered by Playwright (headless Chromium) | Correct Malayalam shaping; the same page can also be printed from the browser |
@@ -75,7 +75,6 @@ rental-management-system/
 │  │  │  └─ settings/             # admin only
 │  │  ├─ print/                   # bare print layouts: invoice, statement, receipt
 │  │  └─ api/
-│  │     ├─ auth/[...nextauth]/
 │  │     ├─ pdf/[doc]/[id]/       # Playwright renders /print/... → PDF
 │  │     └─ health/
 │  ├─ modules/
@@ -85,7 +84,7 @@ rental-management-system/
 │  │  └─ <module>/{schema.ts, service.ts, actions.ts, queries.ts, components/, *.test.ts}
 │  ├─ lib/
 │  │  ├─ db.ts            # Prisma client singleton
-│  │  ├─ auth.ts          # Auth.js config
+│  │  ├─ action.ts        # form-state helpers, error → translated message
 │  │  ├─ permissions.ts   # role → permission map, requirePermission()
 │  │  ├─ money.ts         # Decimal ⇄ paise, formatting (₹1,23,456.00)
 │  │  ├─ dates.ts         # Asia/Kolkata "business date", financial year
@@ -103,7 +102,7 @@ rental-management-system/
 ## 5. Authentication & authorization
 
 - **Login:** username + password, hashed with bcrypt (cost 12). Login attempts are rate-limited per username and IP (in-memory, which is enough for a single instance).
-- **Session:** a JWT in an httpOnly cookie with an 8-hour lifetime. The `jwt` callback re-checks `isActive` and `role` from the DB at most every 5 minutes, so a deactivated user or a role change takes effect quickly.
+- **Session:** a signed JWT (`{ uid, sv }`) in an httpOnly cookie with an 8-hour lifetime. On **every request** the server reloads the user and checks `is_active` and `session_version`. A password reset, password change, role change or deactivation bumps `session_version`, so that user's existing sessions end immediately.
 - **Authorization:** one permission map in `lib/permissions.ts`, for example:
 
 | Permission | Admin | Staff |
@@ -117,7 +116,7 @@ rental-management-system/
 | `date.backdate` (issue and return dates only) | ✅ | ❌ |
 | `dashboard.view`, `report.view`, `user.manage`, `settings.write` | ✅ | ❌ |
 
-- **Enforcement points:** middleware (logged in?) → page guard (`requirePermission`, else 403) → server action guard (always). Staff land on Orders, not the Dashboard.
+- **Enforcement points:** `proxy.ts` (optimistic: session cookie present?) → page guard (`requirePagePermission`, else the 403 page) → server action guard (`requireActionPermission`, always). Staff land on Orders, not the Dashboard.
 - **Bootstrap:** the first admin account comes from the seed script, using env vars for the username and initial password. It must be changed on first login.
 
 ## 6. Transactions & concurrency
