@@ -46,8 +46,105 @@ model User {
   auditLogs        AuditLog[]
   settingsUpdates  Settings[]
   customersCreated Customer[]
+  stockMovements   StockMovement[]
 
   @@map("users")
+}
+
+enum Tracking {
+  SERIALISED
+  QUANTITY
+}
+
+enum UnitStatus {
+  AVAILABLE
+  RENTED
+  UNDER_REPAIR
+  LOST
+  RETIRED
+}
+
+enum MovementType {
+  OPENING
+  PURCHASE
+  WRITE_OFF
+  SENT_TO_REPAIR
+  REPAIR_DONE
+  REPAIR_SCRAPPED
+  RETURN_DAMAGED
+  RETURN_LOST
+  CORRECTION
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  nameMl   String?   @map("name_ml")
+  isActive Boolean   @default(true) @map("is_active")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int      @map("category_id")
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  /// Optional short code, unique when present (e.g. GEN-5KVA).
+  code        String?  @unique
+  name        String
+  nameMl      String?  @map("name_ml")
+  tracking    Tracking
+  dailyRate   Decimal  @map("daily_rate") @db.Decimal(12, 2)
+  /// Counters are changed only by service transactions (docs/02-architecture.md §6).
+  qtyOwned    Int      @default(0) @map("qty_owned")
+  qtyOut      Int      @default(0) @map("qty_out")
+  qtyRepair   Int      @default(0) @map("qty_repair")
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  units     ProductUnit[]
+  movements StockMovement[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductUnit {
+  id        Int        @id @default(autoincrement())
+  productId Int        @map("product_id")
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  serialNo  String     @map("serial_no")
+  status    UnitStatus @default(AVAILABLE)
+  notes     String?
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  movements StockMovement[]
+
+  @@unique([productId, serialNo])
+  @@index([productId, status])
+  @@map("product_units")
+}
+
+model StockMovement {
+  id          Int          @id @default(autoincrement())
+  productId   Int          @map("product_id")
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  unitId      Int?         @map("unit_id")
+  unit        ProductUnit? @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  type        MovementType
+  deltaOwned  Int          @map("delta_owned")
+  deltaRepair Int          @map("delta_repair")
+  // return_line_id is added in Step 5 together with the return_lines table.
+  reason      String?
+  createdById Int          @map("created_by")
+  createdBy   User         @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([productId, id])
+  @@map("stock_movements")
 }
 
 model Customer {

@@ -18,6 +18,16 @@ async function main() {
       mustChangePassword: true,
     },
   });
+  // Second admin for module specs, independent of the password set in auth-users.spec.
+  await db.user.create({
+    data: {
+      username: "manager",
+      fullName: "Shop Manager",
+      role: "ADMIN",
+      passwordHash: await bcrypt.hash("manager-pass", 4),
+      mustChangePassword: false,
+    },
+  });
   // Counter staff for module specs (no forced password change).
   await db.user.create({
     data: {

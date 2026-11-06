@@ -70,16 +70,16 @@ Cardinality:
 Index: `lower(name)` for search.
 
 ### categories
-`id`, `name` UNIQUE, `name_ml` null, `is_active`.
+`id`, `name` UNIQUE (also unique ignoring case), `name_ml` null, `is_active`.
 
 ### products
 | Column | Type | Constraints |
 |---|---|---|
 | id | int PK | |
 | category_id → categories | | NOT NULL |
-| code | text | UNIQUE (short code, e.g. `GEN-5KVA`) |
+| code | text | null, UNIQUE when present (short code, e.g. `GEN-5KVA`; capitals, digits, `-`, max 20) |
 | name / name_ml | text | name NOT NULL |
-| tracking | enum `SERIALISED`,`QUANTITY` | NOT NULL, **cannot change after the first issue** (app rule) |
+| tracking | enum `SERIALISED`,`QUANTITY` | NOT NULL, **cannot change once the product has any stock history** (app rule) |
 | daily_rate | numeric(12,2) | `CHECK (daily_rate > 0)` |
 | qty_owned | int | `CHECK (qty_owned >= 0)` |
 | qty_out | int | `CHECK (qty_out >= 0)` |
@@ -113,11 +113,12 @@ For a serialised product: `qty_owned` = units not LOST/RETIRED, `qty_out` = RENT
 | type | enum `OPENING`,`PURCHASE`,`WRITE_OFF`,`SENT_TO_REPAIR`,`REPAIR_DONE`,`REPAIR_SCRAPPED`,`RETURN_DAMAGED`,`RETURN_LOST`,`CORRECTION` | |
 | delta_owned | int | |
 | delta_repair | int | `CHECK (delta_owned <> 0 OR delta_repair <> 0)` |
-| return_line_id → return_lines | | null (set for RETURN_*) |
+| return_line_id → return_lines | | null (set for RETURN_*); **added in Step 5** with the return_lines table |
 | reason | text | NOT NULL for WRITE_OFF / CORRECTION / REPAIR_SCRAPPED |
 | created_by → users, created_at | | |
 
 Issues and returns change `qty_out`; they are already recorded in issue and return lines, so they do not appear here.
+The table is **append-only**: a trigger rejects UPDATE and DELETE (like `audit_logs`).
 Reconciliation: `qty_owned = Σ delta_owned`, `qty_repair = Σ delta_repair`, `qty_out = Σ active issued − Σ active returned`.
 
 ### rental_orders
