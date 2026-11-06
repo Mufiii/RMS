@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   // Cache Components is intentionally OFF: every screen is per-user and must
   // show live stock and money, so plain request-time rendering is the safer model.
   // See docs/02-architecture.md §2.
+  // Dev only: let phones/PCs on the shop LAN use live reload (http://192.168.x.x:3000).
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
   serverExternalPackages: ["@prisma/client", "pg", "bcryptjs"],
   turbopack: {
     rules: {

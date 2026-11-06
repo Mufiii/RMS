@@ -16,6 +16,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except the login page, health check, Next internals and static files.
-  matcher: ["/((?!login|forbidden|api/health|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|svg|ico|woff2?)$).*)"],
+  // Everything except the login page, health check, all Next internals (/_next/*,
+  // including the dev server's live-reload connection) and static files.
+  matcher: ["/((?!login|forbidden|api/health|_next/|favicon.ico|.*\\.(?:png|jpg|svg|ico|woff2?)$).*)"],
 };
