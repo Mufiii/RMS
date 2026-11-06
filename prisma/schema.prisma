@@ -45,8 +45,31 @@ model User {
 
   auditLogs        AuditLog[]
   settingsUpdates  Settings[]
+  customersCreated Customer[]
 
   @@map("users")
+}
+
+model Customer {
+  /// Shown as the customer number.
+  id            Int      @id @default(autoincrement())
+  name          String
+  /// Digits only, normalised (see modules/customers/phone.ts). Not unique: families share numbers.
+  phone         String
+  altPhone      String?  @map("alt_phone")
+  address       String?
+  idProofType   String?  @map("id_proof_type")
+  idProofNumber String?  @map("id_proof_number")
+  notes         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdById   Int      @map("created_by")
+  createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([phone])
+  @@index([altPhone])
+  @@map("customers")
 }
 
 model AuditLog {

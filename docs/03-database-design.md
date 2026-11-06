@@ -58,8 +58,8 @@ Cardinality:
 |---|---|---|
 | id | int PK | shown as the customer number |
 | name | text | NOT NULL |
-| phone | text | NOT NULL, indexed (not unique, since family members may share a number; a duplicate shows a warning in the UI) |
-| alt_phone | text | null |
+| phone | text | NOT NULL, indexed, **digits only** (normalised, `CHECK` 6–15 digits); not unique, since family members may share a number; a duplicate shows a warning in the UI |
+| alt_phone | text | null, indexed, digits only (as phone) |
 | address | text | null |
 | id_proof_type | text | null (Aadhaar, Driving Licence, …) |
 | id_proof_number | text | null |

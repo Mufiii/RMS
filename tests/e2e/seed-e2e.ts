@@ -18,6 +18,16 @@ async function main() {
       mustChangePassword: true,
     },
   });
+  // Counter staff for module specs (no forced password change).
+  await db.user.create({
+    data: {
+      username: "counter",
+      fullName: "Counter Staff",
+      role: "STAFF",
+      passwordHash: await bcrypt.hash("counter-pass", 4),
+      mustChangePassword: false,
+    },
+  });
 }
 
 main().finally(() => db.$disconnect());
