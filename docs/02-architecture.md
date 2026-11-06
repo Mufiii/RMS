@@ -1,6 +1,6 @@
 # Architecture – Sree Krishna Motors Rental Management System
 
-Status: **DRAFT FOR REVIEW** (2026-11-05). No application code exists yet.
+Status: **APPROVED** (2026-11-06). No application code exists yet.
 
 ---
 
@@ -114,7 +114,7 @@ rental-management-system/
 | `payment.create`, `refund.create`, `receipt.print` | ✅ | ✅ |
 | `product.write`, `rate.write`, `stock.adjust` | ✅ | ❌ |
 | `invoice.discount`, `*.void`, `*.cancel` | ✅ | ❌ |
-| `date.backdate` | ✅ | ❌ |
+| `date.backdate` (issue and return dates only) | ✅ | ❌ |
 | `dashboard.view`, `report.view`, `user.manage`, `settings.write` | ✅ | ❌ |
 
 - **Enforcement points:** middleware (logged in?) → page guard (`requirePermission`, else 403) → server action guard (always). Staff land on Orders, not the Dashboard.
@@ -160,8 +160,10 @@ balance                            = invoiceTotal − Σ payments + Σ refunds
 
 ## 8. Documents (PDF)
 
-- `/print/invoice/[id]`, `/print/statement/[orderId]` and `/print/receipt/[id]` are plain, print-optimised React pages with bilingual labels.
-- `/api/pdf/[doc]/[id]` checks permissions, then reuses one shared Playwright browser that opens the print page (forwarding the user's session cookie) and returns `page.pdf()` on A4. Users can also just press Print in the browser.
+- **Output format: thermal roll slips.** All three documents (final invoice, running statement, payment receipt) print on a thermal receipt printer. The default is **80 mm (3 inch) paper, about 72 mm printable**, single column, with continuous length (a long invoice is just a longer slip). The paper width is a **business setting** (`print.paperWidthMm`, default 80), so 58 mm or an A4 layout can be added later without code restructuring.
+- `/print/invoice/[id]`, `/print/statement/[orderId]` and `/print/receipt/[id]` are plain, print-optimised React pages with bilingual labels. CSS uses `@page { size: <width>mm auto; margin: 0 }` and a fixed content width. Item rows are laid out to fit the narrow width: name on one line, then qty × rate × days = amount on the next.
+- **Printing goes through the OS printer driver** (Windows or Android system printing), never raw ESC/POS, because ESC/POS cannot render Malayalam script. This works whether the printer is USB, Bluetooth or network attached; the connection type is not decided yet and does not affect the code.
+- `/api/pdf/[doc]/[id]` checks permissions, then reuses one shared Playwright browser that opens the print page (forwarding the user's session cookie) and returns `page.pdf()` at the configured roll width (for sharing on WhatsApp, etc.). Users normally just press Print in the browser.
 - Invoices are rendered from their **stored snapshot**, so an old invoice always reprints exactly as it was issued.
 
 ## 9. Internationalisation

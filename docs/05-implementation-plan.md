@@ -1,6 +1,8 @@
 # Implementation Plan & Workflow Coverage
 
-Status: **DRAFT FOR REVIEW** (2026-11-05)
+Status: **APPROVED** (2026-11-06)
+
+Working agreement: **demo after every step.** Each module is stopped and shown in the browser, and the next step starts only after the user's go-ahead.
 
 ## 1. Build order (approved, with gaps found during review folded in)
 

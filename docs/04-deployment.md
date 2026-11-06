@@ -1,6 +1,12 @@
 # Deployment Strategy
 
-Status: **DRAFT FOR REVIEW** (2026-11-05). Hosting is not decided yet; the same build supports both options below.
+Status: **APPROVED** (2026-11-06). Hosting is not decided yet; the same build supports both options below. The decision is due before Step 10.
+
+Decision inputs gathered so far (2026-11-06):
+- Shop internet: **reliable** during business hours, so a VPS is viable.
+- Owner needs remote access (dashboard from home or while travelling): **unknown, ask the client.** If yes, choose the VPS, or the shop PC plus Tailscale.
+- Off-machine backup destination: decided together with hosting.
+- Printing works through the OS printer driver in both options, so the printer connection (USB, Bluetooth or network) does not affect this choice.
 
 The same code runs everywhere. Only the environment variables differ.
 
