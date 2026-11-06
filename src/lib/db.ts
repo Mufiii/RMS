@@ -12,5 +12,12 @@ function createClient(): Db {
 // One client per process (survives hot reload in dev).
 const globalForDb = globalThis as unknown as { __rmsDb?: Db };
 
-export const db: Db = globalForDb.__rmsDb ?? createClient();
+// After `prisma generate` (e.g. a new table) the dev server reloads this module with a
+// new PrismaClient class, but the cached instance is from the old class and lacks the
+// new models. Only reuse the cache if it was built by the current class.
+const cached = globalForDb.__rmsDb;
+const reusable = cached instanceof PrismaClient ? cached : undefined;
+if (cached && !reusable) void cached.$disconnect().catch(() => {});
+
+export const db: Db = reusable ?? createClient();
 if (process.env.NODE_ENV !== "production") globalForDb.__rmsDb = db;
