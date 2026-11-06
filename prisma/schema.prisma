@@ -51,6 +51,8 @@ model User {
   ordersCancelled  RentalOrder[]     @relation("OrderCancelledBy")
   issues           Issue[]
   linesVoided      IssueLine[]
+  returnsReceived  Return[]          @relation("ReturnReceivedBy")
+  returnsVoided    Return[]          @relation("ReturnVoidedBy")
 
   @@map("users")
 }
@@ -85,8 +87,9 @@ model RentalOrder {
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz
 
-  issues Issue[]
-  lines  IssueLine[]
+  issues  Issue[]
+  lines   IssueLine[]
+  returns Return[]
 
   @@index([customerId, status])
   @@index([status, openedOn])
@@ -129,6 +132,8 @@ model IssueLine {
   voidedBy    User?        @relation(fields: [voidedById], references: [id], onDelete: Restrict)
   voidedAt    DateTime?    @map("voided_at") @db.Timestamptz
   voidReason  String?      @map("void_reason")
+
+  returnLines ReturnLine[]
 
   @@index([orderId])
   @@index([issueId])
@@ -223,7 +228,8 @@ model StockMovement {
   type        MovementType
   deltaOwned  Int          @map("delta_owned")
   deltaRepair Int          @map("delta_repair")
-  // return_line_id is added in Step 5 together with the return_lines table.
+  returnLineId Int?        @map("return_line_id")
+  returnLine   ReturnLine? @relation(fields: [returnLineId], references: [id], onDelete: Restrict)
   reason      String?
   createdById Int          @map("created_by")
   createdBy   User         @relation(fields: [createdById], references: [id], onDelete: Restrict)
@@ -303,4 +309,55 @@ model Settings {
   updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("settings")
+}
+
+enum ReturnCondition {
+  GOOD
+  DAMAGED
+  LOST
+}
+
+model Return {
+  id           Int          @id @default(autoincrement())
+  orderId      Int          @map("order_id")
+  order        RentalOrder  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  returnDate   DateTime     @map("return_date") @db.Date
+  isBackdated  Boolean      @default(false) @map("is_backdated")
+  notes        String?
+  receivedById Int          @map("received_by")
+  receivedBy   User         @relation("ReturnReceivedBy", fields: [receivedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  status       LineStatus   @default(ACTIVE)
+  voidedById   Int?         @map("voided_by")
+  voidedBy     User?        @relation("ReturnVoidedBy", fields: [voidedById], references: [id], onDelete: Restrict)
+  voidedAt     DateTime?    @map("voided_at") @db.Timestamptz
+  voidReason   String?      @map("void_reason")
+
+  lines ReturnLine[]
+
+  @@index([orderId])
+  @@map("returns")
+}
+
+model ReturnLine {
+  id           Int             @id @default(autoincrement())
+  returnId     Int             @map("return_id")
+  return       Return          @relation(fields: [returnId], references: [id], onDelete: Restrict)
+  issueLineId  Int             @map("issue_line_id")
+  issueLine    IssueLine       @relation(fields: [issueLineId], references: [id], onDelete: Restrict)
+  quantity     Int
+  condition    ReturnCondition
+  /// Calendar-inclusive days from the issue date to the return date (billing engine).
+  days         Int
+  /// Copied from the issue line.
+  dailyRate    Decimal         @map("daily_rate") @db.Decimal(12, 2)
+  rentAmount   Decimal         @map("rent_amount") @db.Decimal(12, 2)
+  damageAmount Decimal         @default(0) @map("damage_amount") @db.Decimal(12, 2)
+  damageNote   String?         @map("damage_note")
+
+  movements StockMovement[]
+
+  @@index([issueLineId])
+  @@index([returnId])
+  @@map("return_lines")
 }

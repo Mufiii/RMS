@@ -38,7 +38,7 @@ export async function recordMovement(
   productId: number,
   type: MovementType,
   deltas: Deltas,
-  opts: { unitId?: number; reason?: string | null } = {},
+  opts: { unitId?: number; reason?: string | null; returnLineId?: number } = {},
 ) {
   await tx.product.update({
     where: { id: productId },
@@ -48,6 +48,7 @@ export async function recordMovement(
     data: {
       productId,
       unitId: opts.unitId ?? null,
+      returnLineId: opts.returnLineId ?? null,
       type,
       deltaOwned: deltas.deltaOwned,
       deltaRepair: deltas.deltaRepair,

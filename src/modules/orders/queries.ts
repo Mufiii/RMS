@@ -65,6 +65,21 @@ export function getOrder(id: number) {
       customer: true,
       createdBy: { select: { fullName: true } },
       cancelledBy: { select: { fullName: true } },
+      returns: {
+        orderBy: [{ returnDate: "asc" }, { id: "asc" }],
+        include: {
+          receivedBy: { select: { fullName: true } },
+          voidedBy: { select: { fullName: true } },
+          lines: {
+            orderBy: { id: "asc" },
+            include: {
+              issueLine: {
+                select: { product: { select: { name: true, nameMl: true } }, unit: { select: { serialNo: true } } },
+              },
+            },
+          },
+        },
+      },
       issues: {
         orderBy: [{ issueDate: "asc" }, { id: "asc" }],
         include: {

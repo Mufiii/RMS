@@ -13,6 +13,7 @@ import { formatPhone } from "@/modules/customers/phone";
 import { getOrder, issuableProducts, orderAuditTrail } from "@/modules/orders/queries";
 import { OrderStatusBadge } from "../status-badge";
 import { CancelOrderForm, IssueForm, VoidLineForm } from "./order-forms";
+import { ReturnForm, VoidReturnForm } from "./return-form";
 
 export default async function OrderPage({ params, searchParams }: PageProps<"/orders/[id]">) {
   const me = await requirePagePermission("order.create");
@@ -36,6 +37,24 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
   const lineLabel = (l: (typeof allLines)[number]) =>
     `${name(l.product)}${l.unit ? ` ${l.unit.serialNo}` : ` × ${l.quantity}`} · ${formatDate(l.issueDate)}`;
   const isAdmin = can(me.role, "record.void");
+  const tr = await getTranslations("returns");
+  const activeLines = allLines.filter((l) => l.status === "ACTIVE");
+  const allReturned = isOpen && activeLines.length > 0 && out.length === 0;
+  const returnable = out.map((l) => ({
+    id: l.id,
+    label: `${name(l.product)}${l.unit ? ` ${l.unit.serialNo}` : ""}`,
+    serial: l.unit?.serialNo ?? null,
+    outstanding: l.quantity - l.qtyReturned,
+    issuedOn: formatDate(l.issueDate),
+  }));
+  const voidableReturns = order.returns
+    .filter((r) => r.status === "ACTIVE")
+    .map((r) => ({
+      id: r.id,
+      label: `#${r.id} · ${formatDate(fromDbDate(r.returnDate))} · ${r.lines
+        .map((l) => `${name(l.issueLine.product)}${l.issueLine.unit ? ` ${l.issueLine.unit.serialNo}` : ` × ${l.quantity}`}`)
+        .join(", ")}`,
+    }));
 
   return (
     <>
@@ -63,6 +82,12 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
             date: order.cancelledAt ? formatDateTime(order.cancelledAt) : "",
             reason: order.cancelReason ?? "",
           })}
+        </p>
+      )}
+
+      {allReturned && (
+        <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+          {tr("allReturned")}
         </p>
       )}
 
@@ -99,6 +124,56 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
               </ul>
             )}
             <p className="mt-3 text-xs text-muted-foreground">{t("billingSoon")}</p>
+          </CardContent>
+        </Card>
+
+        {isOpen && can(me.role, "return.create") && returnable.length > 0 && (
+          <ReturnForm orderId={order.id} lines={returnable} canBackdate={can(me.role, "date.backdate")} today={businessToday()} />
+        )}
+
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>{tr("historyTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 text-sm" data-testid="returns-history">
+            {order.returns.length === 0 && <p className="text-muted-foreground">{tr("noReturns")}</p>}
+            {order.returns.map((r) => (
+              <section key={r.id} className={cn(r.status === "VOIDED" && "text-muted-foreground")}>
+                <h3 className="text-xs text-muted-foreground">
+                  #{r.id} · {tr("returnBy", { date: formatDate(fromDbDate(r.returnDate)), name: r.receivedBy.fullName })}
+                  {r.isBackdated && <span className="ml-2 rounded bg-amber-500/15 px-1.5 text-amber-800 dark:text-amber-300">{tr("backdated")}</span>}
+                </h3>
+                <ul className={cn("mt-1 space-y-1", r.status === "VOIDED" && "line-through")}>
+                  {r.lines.map((l) => (
+                    <li key={l.id} className="flex flex-wrap justify-between gap-x-3">
+                      <span>
+                        {name(l.issueLine.product)}
+                        {l.issueLine.unit ? ` ${l.issueLine.unit.serialNo}` : ` × ${l.quantity}`}{" "}
+                        <span
+                          className={cn(
+                            "rounded px-1.5 text-xs",
+                            l.condition === "GOOD" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+                            l.condition === "DAMAGED" && "bg-amber-500/10 text-amber-800 dark:text-amber-300",
+                            l.condition === "LOST" && "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          {tr(`condition.${l.condition}`)}
+                        </span>
+                        {l.damageNote && <span className="text-muted-foreground"> — “{l.damageNote}”</span>}
+                      </span>
+                      <span className="text-right tabular-nums text-muted-foreground">
+                        {tr("days", { count: l.days })} · {tr("rent", { amount: formatINR(toPaise(l.rentAmount)) })}
+                        {toPaise(l.damageAmount) > 0 && <> · {tr("chargeAmount", { amount: formatINR(toPaise(l.damageAmount)) })}</>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {r.notes && <p className="text-muted-foreground">“{r.notes}”</p>}
+                {r.status === "VOIDED" && (
+                  <p className="text-xs">{tr("voidedBy", { name: r.voidedBy?.fullName ?? "—", reason: r.voidReason ?? "" })}</p>
+                )}
+              </section>
+            ))}
           </CardContent>
         </Card>
 
@@ -164,6 +239,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
           </CardContent>
         </Card>
 
+        {isOpen && isAdmin && <VoidReturnForm orderId={order.id} returns={voidableReturns} />}
         {isOpen && isAdmin && <VoidLineForm orderId={order.id} lines={voidable.map((l) => ({ id: l.id, label: lineLabel(l) }))} />}
         {isOpen && can(me.role, "record.cancel") && <CancelOrderForm orderId={order.id} />}
       </div>

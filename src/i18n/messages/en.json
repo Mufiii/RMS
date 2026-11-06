@@ -113,7 +113,8 @@
     "serialTooLong": "Each serial number can be at most 40 characters",
     "tooMany": "Too many at once (max 200)",
     "dateInvalid": "Enter a valid date",
-    "noItems": "Add at least one item"
+    "noItems": "Add at least one item",
+    "amountInvalid": "Enter an amount like 150 or 150.50"
   },
   "errors": {
     "unexpected": "Something went wrong. Please try again.",
@@ -178,6 +179,17 @@
       "lineAlreadyVoided": "This line is already voided",
       "lineHasReturns": "Items on this line were already returned — it can't be voided",
       "hasActiveLines": "{count, plural, =1 {1 line is} other {# lines are}} still active — void them first"
+    },
+    "returns": {
+      "notFound": "Return not found",
+      "noItems": "Enter at least one item coming back",
+      "duplicateLine": "An item is listed twice",
+      "lineNotFound": "That item isn't out on this order",
+      "tooMany": "Only {outstanding} of {product} {outstanding, plural, =1 {is} other {are}} out",
+      "beforeIssue": "{product} was issued on {date} — the return can't be earlier",
+      "noteRequired": "Add a note for the damaged or lost {product}",
+      "alreadyVoided": "This return is already voided",
+      "cannotVoidMoved": "{product} has moved on since this return (issued again, repaired or written off), so the return can't be voided"
     }
   },
   "customers": {
@@ -454,7 +466,49 @@
     "changesTitle": "Activity",
     "details": "Details",
     "createdBy": "Created by {name}",
-    "billingSoon": "Rent so far, statement and invoice come in Step 6; payments in Step 7.",
+    "billingSoon": "Rent so far, statement and invoice come in Step 6; payments in Step 7. Returned batches already show their rent below.",
     "customerPage": "Customer page"
+  },
+  "returns": {
+    "title": "Record return",
+    "hint": "Enter how many came back of each item, and in what condition.",
+    "returnAllGood": "All back in good condition",
+    "notReturned": "Not returned",
+    "good": "Good",
+    "damaged": "Damaged",
+    "lost": "Lost",
+    "outN": "{count} out",
+    "issuedOn": "issued {date}",
+    "charge": "Charge (₹)",
+    "note": "Note",
+    "damageCharge": "Damage charge (₹)",
+    "damageNote": "What is damaged?",
+    "lostCharge": "Loss charge (₹)",
+    "lostNote": "Note on the loss",
+    "date": "Return date",
+    "notes": "Note (optional)",
+    "submit": "Record return",
+    "recorded": "Return recorded",
+    "historyTitle": "Returns",
+    "noReturns": "Nothing returned yet.",
+    "returnBy": "Returned on {date}, received by {name}",
+    "backdated": "backdated",
+    "days": "{count, plural, =1 {1 day} other {# days}}",
+    "rent": "rent {amount}",
+    "chargeAmount": "charge {amount}",
+    "condition": {
+      "GOOD": "good",
+      "DAMAGED": "damaged",
+      "LOST": "lost"
+    },
+    "voidTitle": "Void a return",
+    "voidHint": "For a return entered by mistake. Items go back out on the order and stock is reversed.",
+    "chooseReturn": "Return",
+    "void": "Void return",
+    "voided": "Return voided",
+    "voidedBy": "Voided by {name}: “{reason}”",
+    "reason": "Reason",
+    "allReturned": "Everything on this order has been returned. The final invoice comes in Step 6.",
+    "nothingToReturn": "Nothing is out on this order."
   }
 }
