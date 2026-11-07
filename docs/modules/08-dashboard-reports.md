@@ -1,6 +1,6 @@
 # Module: Dashboard & reports (Step 8)
 
-Status: **built 2026-11-07** on branch `feature/step-8-dashboard`, awaiting demo sign-off.
+Status: **released in v0.8.0** (2026-11-07).
 
 Admin only. Staff have no dashboard and no reports: pages show the 403 page, and the CSV endpoint answers 403. Staff land on Orders.
 
