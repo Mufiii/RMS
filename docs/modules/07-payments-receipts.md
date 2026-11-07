@@ -1,6 +1,6 @@
 # Module: Payments, receipts & printing (Step 7)
 
-Status: **built 2026-11-07** on branch `feature/step-7-payments`, awaiting demo sign-off.
+Status: **released in v0.7.0** (2026-11-07).
 
 ## Screens
 

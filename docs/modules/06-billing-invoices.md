@@ -1,6 +1,6 @@
 # Module: Billing engine & invoices (Step 6)
 
-Status: **built 2026-11-07**, awaiting demo sign-off.
+Status: **released in v0.6.0** (2026-11-07).
 
 ## Screens
 
