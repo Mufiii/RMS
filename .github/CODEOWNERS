@@ -1,0 +1,8 @@
+# Every change is owned by the repository owner.
+* @Mufiii
+
+# Money, stock and schema changes deserve extra care in review.
+/prisma/ @Mufiii
+/src/modules/billing/ @Mufiii
+/src/modules/invoices/ @Mufiii
+/src/lib/permissions.ts @Mufiii

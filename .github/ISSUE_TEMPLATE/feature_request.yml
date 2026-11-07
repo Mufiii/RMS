@@ -1,0 +1,31 @@
+name: Feature / change request
+description: A new feature or a change to a business rule
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What is needed, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: rule
+    attributes:
+      label: Business rule (if it changes one)
+      description: Which rule in docs/01-requirements.md changes, and has the client confirmed it?
+  - type: dropdown
+    id: step
+    attributes:
+      label: Build step
+      options:
+        - "1 Setup, auth, roles"
+        - "2 Customers"
+        - "3 Products & inventory"
+        - "4 Rental orders & issue"
+        - "5 Returns"
+        - "6 Billing & invoices"
+        - "7 Payments & receipts"
+        - "8 Dashboard & reports"
+        - "9 Localisation & settings"
+        - "10 Hardening & deployment"
+        - Other / after v1
