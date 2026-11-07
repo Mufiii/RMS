@@ -14,7 +14,7 @@ export default async function EditCustomerPage({ params }: PageProps<"/customers
   const t = await getTranslations("customers");
   return (
     <>
-      <PageHeader title={`${t("edit")} · #${c.id}`} />
+      <PageHeader title={`${t("edit")} · #${c.id}`} back={{ href: `/customers/${c.id}`, label: c.name }} />
       <CustomerForm
         defaults={{
           id: c.id,

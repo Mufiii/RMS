@@ -18,6 +18,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-sidebar-muted: var(--sidebar-muted);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -48,39 +49,51 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Ink-black rail, cool paper-white page, one "Krishna blue" accent for what
+ * you can act on or what is selected. Green / red / amber only carry meaning
+ * (paid · owed · needs attention). All text colours meet WCAG AA on white.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.975 0.004 260);
+  --foreground: oklch(0.2 0.02 262);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.2 0.02 262);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.2 0.02 262);
+  --primary: oklch(0.5 0.2 262);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.012 262);
+  --secondary-foreground: oklch(0.3 0.06 262);
+  --muted: oklch(0.96 0.006 262);
+  --muted-foreground: oklch(0.48 0.02 262);
+  --accent: oklch(0.95 0.025 262);
+  --accent-foreground: oklch(0.32 0.12 262);
+  --destructive: oklch(0.55 0.21 27);
+  --border: oklch(0.91 0.008 262);
+  --input: oklch(0.87 0.01 262);
+  --ring: oklch(0.55 0.2 262);
+  --chart-1: oklch(0.5 0.2 262);
+  --chart-2: oklch(0.68 0.13 245);
+  --chart-3: oklch(0.38 0.14 268);
+  --chart-4: oklch(0.8 0.08 250);
+  --chart-5: oklch(0.28 0.05 262);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.18 0.018 262);
+  --sidebar-foreground: oklch(0.83 0.012 262);
+  --sidebar-primary: oklch(0.55 0.2 262);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.27 0.035 262);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.62 0.18 262);
+  --sidebar-muted: oklch(0.68 0.015 262);
+  /* Semantic accents (tiles, charts, badges). Dark enough for text on white. */
+  --dash-blue: oklch(0.5 0.2 262);
+  --dash-green: oklch(0.5 0.13 152);
+  --dash-red: oklch(0.54 0.21 27);
+  --dash-amber: oklch(0.56 0.13 62);
+  --dash-violet: oklch(0.5 0.2 293);
 }
 
 .dark {
@@ -90,8 +103,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.68 0.16 258);
+  --primary-foreground: oklch(0.16 0.02 262);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -115,6 +128,12 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-muted: oklch(0.68 0.015 262);
+  --dash-blue: oklch(0.707 0.165 254.624);
+  --dash-green: oklch(0.723 0.219 149.579);
+  --dash-red: oklch(0.704 0.191 22.216);
+  --dash-amber: oklch(0.828 0.189 84.429);
+  --dash-violet: oklch(0.702 0.183 293.541);
 }
 
 @layer base {
@@ -126,5 +145,27 @@
   }
   html {
     @apply font-sans;
+    font-size: 15px;
+    caret-color: var(--primary);
+    scrollbar-color: oklch(0.8 0.01 262) transparent;
+  }
+  /* Malayalam glyphs are taller; give lines room so labels never clip. */
+  html:lang(ml) {
+    line-height: 1.65;
+  }
+  ::selection {
+    background: oklch(0.5 0.2 262 / 18%);
+  }
+  :focus-visible {
+    outline-color: var(--ring);
+  }
+}
+
+@layer components {
+  /* Money and counts line up in columns everywhere. */
+  .tabular-nums,
+  td,
+  [data-slot="table-cell"] {
+    font-variant-numeric: tabular-nums;
   }
 }

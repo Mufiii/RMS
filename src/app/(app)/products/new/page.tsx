@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Tags } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { requirePagePermission } from "@/modules/auth/session";
 import { listCategories } from "@/modules/products/queries";
@@ -13,14 +16,19 @@ export default async function NewProductPage() {
   const categories = await listCategories(false);
   return (
     <>
-      <PageHeader title={t("products.new")} />
+      <PageHeader title={t("products.new")} back={{ href: "/products", label: t("products.title") }} />
       {categories.length === 0 ? (
-        <div className="max-w-2xl rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-          <p>{t("categories.empty")}</p>
-          <Link href="/products/categories" className={buttonVariants({ variant: "outline", className: "mt-4" })}>
-            {t("categories.new")}
-          </Link>
-        </div>
+        <Card className="max-w-3xl py-0">
+          <EmptyState
+            icon={Tags}
+            title={t("categories.empty")}
+            action={
+              <Link href="/products/categories" className={buttonVariants({ size: "lg" })}>
+                {t("categories.new")}
+              </Link>
+            }
+          />
+        </Card>
       ) : (
         <ProductForm
           categories={categories.map((c) => ({ id: c.id, label: ml && c.nameMl ? c.nameMl : c.name }))}

@@ -17,7 +17,7 @@ export default async function EditProductPage({ params }: PageProps<"/products/[
   const options = categories.some((c) => c.id === p.categoryId) ? categories : [...categories, { ...p.category, _count: { products: 0 } }];
   return (
     <>
-      <PageHeader title={`${t("edit")} · ${p.name}`} />
+      <PageHeader title={`${t("edit")} · ${p.name}`} back={{ href: `/products/${p.id}`, label: p.name }} />
       <ProductForm
         trackingLocked={hasHistory}
         categories={options.map((c) => ({ id: c.id, label: ml && c.nameMl ? c.nameMl : c.name }))}

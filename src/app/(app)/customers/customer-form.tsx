@@ -49,7 +49,7 @@ export function CustomerForm({ defaults }: { defaults: CustomerFormDefaults }) {
   const dups = state.duplicates ?? [];
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="max-w-3xl">
       <CardContent>
         {/* key resets uncontrolled inputs to the echoed values after each submit */}
         <form key={JSON.stringify(state.values ?? {})} action={action} className="grid gap-4">

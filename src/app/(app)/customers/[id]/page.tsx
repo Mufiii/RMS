@@ -2,11 +2,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, Pencil, Phone, Plus } from "lucide-react";
+import { Pencil, Phone, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { businessToday, formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
 import { formatINR } from "@/lib/money";
 import { orderBalances } from "@/modules/payments/queries";
@@ -46,11 +47,8 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
 
   return (
     <>
-      <Link href="/customers" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {t("title")}
-      </Link>
       <PageHeader
+        back={{ href: "/customers", label: t("title") }}
         title={c.name}
         actions={
           <>
@@ -80,12 +78,10 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
       </PageHeader>
 
       {(saved === "created" || saved === "updated") && (
-        <p role="status" className="mb-4 max-w-2xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {saved === "created" ? t("created") : t("updated")}
-        </p>
+        <Notice tone="success">{saved === "created" ? t("created") : t("updated")}</Notice>
       )}
 
-      <div className="grid max-w-5xl gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>{t("details")}</CardTitle>

@@ -7,6 +7,8 @@ import type { Role } from "@/generated/prisma/enums";
 export const PERMISSIONS = {
   "customer.read": ["ADMIN", "STAFF"],
   "customer.write": ["ADMIN", "STAFF"],
+  /** Only customers with no orders or payments; everyone else is deactivated. */
+  "customer.delete": ["ADMIN"],
   "order.create": ["ADMIN", "STAFF"],
   "issue.create": ["ADMIN", "STAFF"],
   "return.create": ["ADMIN", "STAFF"],

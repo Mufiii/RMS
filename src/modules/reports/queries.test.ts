@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { addDays, businessToday, isIsoDate } from "@/lib/dates";
+import { addDays, businessToday, isIsoDate, toDbDate } from "@/lib/dates";
 import { makeUser, resetDb } from "../../../tests/db";
 import { createCustomer } from "@/modules/customers/service";
 import { customerSchema } from "@/modules/customers/schema";
@@ -12,7 +12,7 @@ import { recordReturn } from "@/modules/returns/service";
 import { createInvoice } from "@/modules/invoices/service";
 import { moneySchema } from "@/modules/payments/schema";
 import { recordPayment, recordRefund, voidPayment } from "@/modules/payments/service";
-import { dashboard, longRentals } from "./dashboard";
+import { dashboard, longRentals, monthsBack } from "./dashboard";
 import { parseRange, runReport } from "./queries";
 
 const today = businessToday();
@@ -74,12 +74,43 @@ describe("dashboard", () => {
     expect([d.today.received, d.today.refunded, d.today.net, d.today.count]).toEqual([25000, 0, 25000, 2]);
     expect([d.billedDue, d.customersOwing, d.creditHeld]).toEqual([25000, 1, 0]);
     expect(d.openSoFar).toBe(3 * 800 * 35 - 10000);
-    expect(d.week).toHaveLength(7);
-    expect(d.week[6]).toEqual({ date: today, net: 25000 });
+    // 52 pieces owned (50 props + 2 generators); the 3 props out on day 35 count as out too long.
+    expect(d.stock).toEqual({ owned: 52, available: 49, onRent: 0, tooLong: 3, repair: 0 });
+    expect(d.months.map((m) => m.month)).toEqual([5, 4, 3, 2, 1, 0].map((n) => monthsBack(today, n).slice(0, 7)));
+    expect(d.months[5].net).toBe(25000);
+    expect(d.recentRentals.map((r) => [r.order.orderNo, r.customer.name, r.state, r.issueDate, r.returnDate])).toEqual([
+      [o1.orderNo, "Ravi", "returned", addDays(today, -9), addDays(today, -5)],
+      [o2.orderNo, "Anu", "tooLong", addDays(today, -34), null],
+    ]);
+    expect(d.recentPayments.map((p) => [p.customer.name, p.mode, p.amount])).toEqual([
+      ["Anu", "CASH", 10000],
+      ["Ravi", "UPI", 15000],
+    ]);
 
     await db.settings.update({ where: { id: 1 }, data: { longRentalDays: 40 } });
     d = await dashboard(today);
     expect([d.threshold, d.longRentals.length]).toEqual([40, 0]);
+    expect(d.stock).toMatchObject({ onRent: 3, tooLong: 0 });
+    expect(d.recentRentals[1].state).toBe("out");
+  });
+
+  it("collected per month: last 6 months, refunds off, voided and older money left out", async () => {
+    const o = await order(ravi, 0, [{ productId: props.id, quantity: 1 }]);
+    // Payments are never backdated by the app (and can't be edited), so older ones are inserted as they would have been entered then.
+    const old = (receiptNo: string, date: string, amount: string) =>
+      db.payment.create({
+        data: { receiptNo, orderId: o.id, customerId: ravi, type: "ADVANCE", mode: "CASH", amount, paymentDate: toDbDate(date), receivedById: admin.id },
+      });
+    await old("OLD-1", monthsBack(today, 2), "300");
+    await old("OLD-2", addDays(monthsBack(today, 5), -1), "200"); // just before the 6-month window
+    const p3 = await pay(o.id, "50");
+    const line = await db.issueLine.findFirstOrThrow({ where: { orderId: o.id } });
+    await recordReturn(admin, { orderId: o.id, date: today, notes: null, entries: [returnEntrySchema.parse({ issueLineId: line.id, good: 1 })] });
+    await createInvoice(admin, { orderId: o.id, discount: null, discountReason: null }); // ₹8
+    await voidPayment(admin, { paymentId: p3.id, reason: "wrong" });
+    await recordRefund(admin, moneySchema.parse({ orderId: o.id, amount: "20", mode: "CASH" }));
+    const d = await dashboard(today);
+    expect(d.months.map((m) => m.net)).toEqual([0, 0, 0, 30000, 0, -2000]);
   });
 });
 

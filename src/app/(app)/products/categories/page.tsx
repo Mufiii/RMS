@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -16,20 +14,16 @@ export default async function CategoriesPage() {
 
   return (
     <>
-      <Link href="/products" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {(await getTranslations("products"))("title")}
-      </Link>
-      <PageHeader title={t("title")} />
+      <PageHeader title={t("title")} back={{ href: "/products", label: (await getTranslations("products"))("title") }} />
 
       <div className="grid max-w-3xl gap-4">
         <CategoryForm />
         {categories.length === 0 ? (
           <p className="text-muted-foreground">{t("empty")}</p>
         ) : (
-          <ul className="divide-y rounded-xl border">
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_oklch(0.2_0.02_262/0.05)]">
             {categories.map((c) => (
-              <li key={c.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
+              <li key={c.id} className="grid gap-2 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className={c.isActive ? undefined : "opacity-60"}>
                   <CategoryForm category={{ id: c.id, name: c.name, nameMl: c.nameMl ?? "" }} />
                   <p className="mt-1 text-xs text-muted-foreground">

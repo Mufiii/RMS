@@ -8,7 +8,7 @@ import { errorState, formValues, zodFieldErrors, type FormState } from "@/lib/ac
 import { requireActionPermission } from "@/modules/auth/session";
 import type { CustomerFormState } from "./form-state";
 import { customerSchema } from "./schema";
-import { createCustomer, DuplicatePhoneError, setCustomerActive, updateCustomer } from "./service";
+import { createCustomer, deleteCustomer, DuplicatePhoneError, setCustomerActive, updateCustomer } from "./service";
 
 function parseId(raw: FormDataEntryValue | null): number {
   const id = Number(raw);
@@ -54,6 +54,19 @@ export async function updateCustomerAction(_prev: CustomerFormState, formData: F
   }
   revalidatePath("/customers");
   redirect(`/customers/${id}?saved=updated`);
+}
+
+export async function deleteCustomerAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const actor = await requireActionPermission("customer.delete");
+    const id = parseId(formData.get("id"));
+    await deleteCustomer(actor, id);
+    revalidatePath("/customers");
+    const t = await getTranslations("customers");
+    return { ok: true, message: t("deleted") };
+  } catch (e) {
+    return errorState(e);
+  }
 }
 
 const toggleSchema = z.object({

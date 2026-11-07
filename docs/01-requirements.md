@@ -62,6 +62,7 @@ Change control: none of the rules below may be changed without the client's expl
 | Apply discounts / waive amounts | ✅ | ❌ |
 | Cancel/void orders, issue lines, invoices, payments (never hard-deleted) | ✅ | ❌ |
 | Backdate issue / return dates | ✅ | ❌ |
+| Delete a customer who has no orders or payments | ✅ | ❌ |
 | Dashboard | ✅ | ❌ (no dashboard at all) |
 | Reports | ✅ | ❌ |
 | Manage users | ✅ | ❌ |
@@ -89,7 +90,7 @@ Change control: none of the rules below may be changed without the client's expl
 - A final invoice can be generated only when every issued item is returned (or marked lost).
 - Staff generate final invoices without a discount. To add a discount after an invoice exists, the admin cancels the invoice (with a reason) and issues a new one, which gets a new number. Cancelled invoices remain visible.
 - After the final invoice, an incoming payment cannot exceed the balance due. Before the invoice, advances are not limited.
-- Customers and products are never deleted, only deactivated. Inactive records stay in history.
+- Products are never deleted, only deactivated. Customers are deactivated too; the only exception is a customer with no orders (not even cancelled ones) and no payments — e.g. a duplicate or a mistake — whom an admin may delete permanently (the details stay in the audit log). Inactive records stay in history.
 - Invoice and receipt numbers are sequential and gap-free per Indian financial year (April–March), e.g. `INV/2026-27/0001`, `RCP/2026-27/0001`. Prefixes can be changed in Settings.
 - Out of scope for v1 unless requested: advance bookings/reservations for future dates, GST, per-customer rates, transport/labour/fuel charges.
 

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { CircleCheck, CircleMinus, Plus, ShieldCheck, UserRound } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/page-header";
+import { Pill } from "@/components/stat-tile";
 import { formatDateTime } from "@/lib/dates";
 import { requirePagePermission } from "@/modules/auth/session";
 import { listUsers } from "@/modules/users/queries";
@@ -25,10 +26,10 @@ export default async function UsersPage() {
           </Link>
         }
       />
-      <div className="rounded-xl border">
+      <Card className="gap-0 py-0">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               <TableHead>{t("users.fullName")}</TableHead>
               <TableHead className="hidden sm:table-cell">{t("users.username")}</TableHead>
               <TableHead>{t("users.role")}</TableHead>
@@ -40,7 +41,7 @@ export default async function UsersPage() {
             {users.map((u) => (
               <TableRow key={u.id} className={u.isActive ? undefined : "opacity-60"}>
                 <TableCell>
-                  <Link href={`/users/${u.id}`} className="font-medium underline-offset-4 hover:underline">
+                  <Link href={`/users/${u.id}`} className="font-medium hover:text-primary hover:underline">
                     {u.fullName}
                   </Link>
                   {u.id === me.id && <span className="ml-1 text-xs text-muted-foreground">({t("users.you")})</span>}
@@ -48,16 +49,25 @@ export default async function UsersPage() {
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">{u.username}</TableCell>
                 <TableCell>
-                  <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{t(`roles.${u.role}`)}</Badge>
+                  <Pill tone={u.role === "ADMIN" ? "blue" : "muted"}>
+                    {u.role === "ADMIN" ? <ShieldCheck aria-hidden /> : <UserRound aria-hidden />}
+                    {t(`roles.${u.role}`)}
+                  </Pill>
                 </TableCell>
                 <TableCell>
                   {u.isActive ? (
-                    <Badge variant="outline">{t("users.active")}</Badge>
+                    <Pill tone="green">
+                      <CircleCheck aria-hidden />
+                      {t("users.active")}
+                    </Pill>
                   ) : (
-                    <Badge variant="destructive">{t("users.inactive")}</Badge>
+                    <Pill tone="muted">
+                      <CircleMinus aria-hidden />
+                      {t("users.inactive")}
+                    </Pill>
                   )}
                   {u.mustChangePassword && u.isActive && (
-                    <div className="mt-1 text-xs text-amber-700 dark:text-amber-400">{t("users.mustChange")}</div>
+                    <div className="mt-1 text-xs text-(--dash-amber)">{t("users.mustChange")}</div>
                   )}
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground md:table-cell">
@@ -67,7 +77,7 @@ export default async function UsersPage() {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </Card>
     </>
   );
 }

@@ -35,15 +35,19 @@ test("the dashboard flags a rental out 30+ days and shows today's money", async 
   await expect(page.locator("p[role=status]").filter({ hasText: "Order created" })).toBeVisible();
 
   await page.goto("/dashboard");
-  const long = page.getByTestId("long-rentals").locator("li");
+  const long = page.getByTestId("long-rentals").locator("tbody tr");
   await expect(long).toHaveCount(1);
   await expect(long.first()).toContainText("Ravi's brother");
   await expect(long.first()).toContainText("35 days");
   await expect(long.first().getByRole("link", { name: /98/ })).toHaveAttribute("href", /^tel:/);
   await expect(page.getByTestId("tile-today")).toContainText("₹700.00");
   await expect(page.getByTestId("tile-out")).toContainText("Items out now");
-  await expect(page.getByTestId("week").locator("li")).toHaveCount(7);
-  await expect(page.getByTestId("week").locator("li").last()).toContainText("₹700.00");
+  await expect(page.getByTestId("months").locator("li")).toHaveCount(6);
+  await expect(page.getByTestId("months").locator("li").last()).toContainText("₹700.00");
+  await expect(page.getByTestId("stock-tooLong")).toContainText("Out 30+ days");
+  await expect(page.getByTestId("trend").locator("svg.recharts-surface")).toBeVisible();
+  await expect(page.getByTestId("recent-rentals").locator("tbody tr")).not.toHaveCount(0);
+  await expect(page.getByTestId("recent-payments").locator("tbody tr")).not.toHaveCount(0);
 });
 
 test("reports: inventory, customers, rentals in a date range, payments and collections", async ({ page }) => {
