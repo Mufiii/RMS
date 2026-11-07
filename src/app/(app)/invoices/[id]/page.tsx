@@ -4,6 +4,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { PrintLinks } from "@/components/print-links";
+import { orderPayments, sumPayments } from "@/modules/payments/queries";
 import { formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
 import { formatINR, toPaise } from "@/lib/money";
 import { can } from "@/lib/permissions";
@@ -26,6 +28,9 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
   const ml = (await getLocale()) === "ml";
   const cancelled = inv.status === "CANCELLED";
   const subtotal = toPaise(inv.rentTotal) + toPaise(inv.damageTotal);
+  const tp = await getTranslations("payments");
+  const money = sumPayments(await orderPayments(inv.order.id));
+  const balance = toPaise(inv.total) - money.received + money.refunded;
 
   return (
     <>
@@ -36,6 +41,8 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
       <PageHeader
         title={inv.invoiceNo}
         actions={
+          <>
+          <PrintLinks doc="invoice" id={inv.id} size="default" />
           <span
             className={cn(
               "inline-flex h-8 items-center rounded-full px-3 text-sm font-medium",
@@ -44,6 +51,7 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
           >
             {t(`statusName.${inv.status}`)}
           </span>
+          </>
         }
       >
         {t("date")} {formatDate(fromDbDate(inv.invoiceDate))}
@@ -142,8 +150,21 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
             </dl>
             <p className="text-xs text-muted-foreground">
               {t("createdBy", { name: inv.createdBy.fullName, date: formatDateTime(inv.createdAt) })}
-              {!cancelled && <> · {t("paymentsSoon")}</>}
             </p>
+            {!cancelled && (
+              <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 border-t pt-3 tabular-nums" data-testid="invoice-money">
+                <dt>{tp("received")}</dt>
+                <dd className="text-right">{formatINR(money.received)}</dd>
+                {money.refunded > 0 && (
+                  <>
+                    <dt>{tp("refunded")}</dt>
+                    <dd className="text-right">{formatINR(money.refunded)}</dd>
+                  </>
+                )}
+                <dt className="font-semibold">{balance < 0 ? tp("excess") : tp("balance")}</dt>
+                <dd className="text-right font-semibold">{balance === 0 ? tp("settled") : formatINR(Math.abs(balance))}</dd>
+              </dl>
+            )}
           </CardContent>
         </Card>
 

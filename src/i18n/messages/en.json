@@ -114,7 +114,9 @@
     "tooMany": "Too many at once (max 200)",
     "dateInvalid": "Enter a valid date",
     "noItems": "Add at least one item",
-    "amountInvalid": "Enter an amount like 150 or 150.50"
+    "amountInvalid": "Enter an amount like 150 or 150.50",
+    "amountPositive": "Enter an amount above zero",
+    "chequeNumberRequired": "Enter the cheque number"
   },
   "errors": {
     "unexpected": "Something went wrong. Please try again.",
@@ -178,7 +180,8 @@
       "lineNotFound": "Line not found",
       "lineAlreadyVoided": "This line is already voided",
       "lineHasReturns": "Items on this line were already returned — it can't be voided",
-      "hasActiveLines": "{count, plural, =1 {1 line is} other {# lines are}} still active — void them first"
+      "hasActiveLines": "{count, plural, =1 {1 line is} other {# lines are}} still active — void them first",
+      "hasPayments": "{count, plural, =1 {1 payment is} other {# payments are}} recorded on this order — void them first"
     },
     "returns": {
       "notFound": "Return not found",
@@ -201,6 +204,17 @@
       "discountForbidden": "Only an admin can give a discount",
       "discountReasonRequired": "Give a reason for the discount",
       "discountTooLarge": "The discount can't be more than {max}"
+    },
+    "payments": {
+      "notFound": "Payment not found",
+      "orderCancelled": "This order is cancelled",
+      "nothingDue": "Nothing is due on this order",
+      "moreThanDue": "Only {due} is due on this order",
+      "refundNeedsInvoice": "Refunds are possible only after the final invoice",
+      "noExcess": "Nothing was paid in excess, so there is nothing to refund",
+      "refundTooLarge": "The refund can't be more than the excess of {max}",
+      "alreadyVoided": "This payment is already voided",
+      "voidRefundFirst": "A refund was paid out against this money — void the refund first"
     }
   },
   "customers": {
@@ -249,7 +263,6 @@
     "outstandingTitle": "Outstanding balance",
     "ordersSoon": "Orders appear here once rental orders are built (Step 4).",
     "itemsOutSoon": "Items currently with this customer appear here (Step 4).",
-    "outstandingSoon": "The amount this customer owes across orders appears here (Step 7).",
     "changesTitle": "Changes",
     "noChanges": "No changes recorded.",
     "call": "Call",
@@ -264,7 +277,11 @@
     "idProofNone": "— None —",
     "newOrder": "New order",
     "ordersEmpty": "No orders yet.",
-    "itemsOutEmpty": "Nothing is out with this customer."
+    "itemsOutEmpty": "Nothing is out with this customer.",
+    "outstandingBilled": "Billed, still due",
+    "outstandingCredit": "Paid in excess (refundable)",
+    "outstandingOpen": "Open orders so far (rent to today − advances)",
+    "outstandingNone": "Nothing outstanding."
   },
   "products": {
     "title": "Products",
@@ -477,7 +494,6 @@
     "changesTitle": "Activity",
     "details": "Details",
     "createdBy": "Created by {name}",
-    "billingSoon": "Payments and advances come in Step 7.",
     "customerPage": "Customer page"
   },
   "returns": {
@@ -570,7 +586,98 @@
     "cancelHint": "The invoice is kept, marked cancelled. Reissue it at once (e.g. with a discount), or re-open the order to correct a return first. The new invoice gets a new number.",
     "reason": "Reason for cancelling",
     "reissue": "Cancel and reissue",
-    "reopen": "Cancel and re-open order",
-    "paymentsSoon": "Payments against this invoice come in Step 7."
+    "reopen": "Cancel and re-open order"
+  },
+  "payments": {
+    "title": "Payments",
+    "paymentsTitle": "Payments",
+    "none": "No payments yet.",
+    "type": {
+      "ADVANCE": "Advance",
+      "PAYMENT": "Payment",
+      "REFUND": "Refund"
+    },
+    "mode": {
+      "CASH": "Cash",
+      "UPI": "UPI",
+      "BANK_TRANSFER": "Bank transfer",
+      "CHEQUE": "Cheque"
+    },
+    "amount": "Amount (₹)",
+    "modeLabel": "Paid by",
+    "reference": "Reference (UPI ref / cheque no.)",
+    "notes": "Note (optional)",
+    "recordAdvance": "Record advance",
+    "recordPayment": "Record payment",
+    "advanceHint": "Before the final invoice, any amount can be taken as an advance.",
+    "dueHint": "Balance due: {due}",
+    "save": "Save and print receipt",
+    "refundTitle": "Refund excess",
+    "refundHint": "The customer paid {excess} more than the invoice. Refund up to that amount.",
+    "refund": "Record refund",
+    "savedPayment": "Payment recorded — receipt {no}.",
+    "savedRefund": "Refund recorded — voucher {no}.",
+    "printReceipt": "Print receipt",
+    "voidTitle": "Void a payment",
+    "voidHint": "For a payment entered by mistake. It stays on record, marked void.",
+    "choosePayment": "Payment",
+    "void": "Void payment",
+    "voided": "Payment voided",
+    "voidedBy": "Voided by {name}: “{reason}”",
+    "reason": "Reason",
+    "due": "Amount due",
+    "billed": "Invoice total",
+    "soFar": "Rent and charges so far",
+    "received": "Received",
+    "refunded": "Refunded",
+    "balance": "Balance due",
+    "excess": "Excess paid",
+    "settled": "Fully paid",
+    "dayTitle": "Collections on {date}",
+    "date": "Date",
+    "show": "Show",
+    "dayNone": "No payments on this day.",
+    "totalIn": "Received",
+    "totalOut": "Refunded",
+    "net": "Net",
+    "customer": "Customer",
+    "order": "Order"
+  },
+  "print": {
+    "print": "Print",
+    "pdf": "PDF",
+    "invoice": "Invoice",
+    "statement": "Statement",
+    "receipt": "Receipt",
+    "refundVoucher": "Refund voucher",
+    "no": "No.",
+    "date": "Date",
+    "order": "Order",
+    "customer": "Customer",
+    "phone": "Phone",
+    "site": "Site",
+    "issued": "Issued",
+    "returned": "Returned",
+    "days": "days",
+    "rent": "Rent",
+    "charge": "Charge",
+    "damage": "Damage / loss",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "received": "Received",
+    "refunded": "Refunded",
+    "balance": "Balance",
+    "paid": "Paid",
+    "amount": "Amount",
+    "mode": "Mode",
+    "reference": "Ref.",
+    "asOf": "Up to",
+    "stillOut": "Still out",
+    "rentSoFar": "Rent so far",
+    "cancelled": "CANCELLED",
+    "voided": "VOID",
+    "thanks": "Thank you",
+    "receivedBy": "Received by"
   }
 }

@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
+import { businessToday, formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
+import { formatINR } from "@/lib/money";
+import { orderBalances } from "@/modules/payments/queries";
 import { can } from "@/lib/permissions";
 import { requirePagePermission } from "@/modules/auth/session";
 import { formatPhone } from "@/modules/customers/phone";
@@ -20,11 +22,12 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
   const me = await requirePagePermission("customer.read");
   const id = Number((await params).id);
   if (!Number.isInteger(id) || id <= 0) notFound();
-  const [c, trail, orders, itemsOut] = await Promise.all([
+  const [c, trail, orders, itemsOut, owed] = await Promise.all([
     getCustomer(id),
     customerAuditTrail(id),
     customerOrders(id),
     customerItemsOut(id),
+    orderBalances(id, businessToday()),
   ]);
   if (!c) notFound();
   const { saved } = await searchParams;
@@ -109,9 +112,47 @@ export default async function CustomerPage({ params, searchParams }: PageProps<"
             <CardTitle>{t("historyTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 text-sm">
-            <section>
+            <section data-testid="customer-outstanding">
               <h3 className="font-medium">{t("outstandingTitle")}</h3>
-              <p className="text-muted-foreground">{t("outstandingSoon")}</p>
+              {owed.billedDue === 0 && owed.creditHeld === 0 && owed.openSoFar === 0 ? (
+                <p className="text-muted-foreground">{t("outstandingNone")}</p>
+              ) : (
+                <>
+                  <dl className="mt-1 grid grid-cols-[1fr_auto] gap-x-4 gap-y-0.5 tabular-nums">
+                    {owed.billedDue > 0 && (
+                      <>
+                        <dt>{t("outstandingBilled")}</dt>
+                        <dd className="text-right font-semibold">{formatINR(owed.billedDue)}</dd>
+                      </>
+                    )}
+                    {owed.openSoFar !== 0 && (
+                      <>
+                        <dt>{t("outstandingOpen")}</dt>
+                        <dd className="text-right">{formatINR(owed.openSoFar)}</dd>
+                      </>
+                    )}
+                    {owed.creditHeld > 0 && (
+                      <>
+                        <dt>{t("outstandingCredit")}</dt>
+                        <dd className="text-right text-amber-700 dark:text-amber-400">{formatINR(owed.creditHeld)}</dd>
+                      </>
+                    )}
+                  </dl>
+                  <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                    {owed.rows
+                      .filter((r) => r.balance !== 0)
+                      .map((r) => (
+                        <li key={r.id} className="flex justify-between gap-3">
+                          <Link href={`/orders/${r.id}`} className="underline-offset-4 hover:underline">
+                            {r.orderNo}
+                            {r.invoice && ` · ${r.invoice.invoiceNo}`}
+                          </Link>
+                          <span className="tabular-nums">{formatINR(r.balance)}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              )}
             </section>
             <section data-testid="customer-items-out">
               <h3 className="font-medium">{t("itemsOutTitle")}</h3>

@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   // See docs/02-architecture.md §2.
   // Dev only: let phones/PCs on the shop LAN use live reload (http://192.168.x.x:3000).
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
-  serverExternalPackages: ["@prisma/client", "pg", "bcryptjs"],
+  serverExternalPackages: ["@prisma/client", "pg", "bcryptjs", "playwright", "playwright-core"],
   turbopack: {
     rules: {
       "*.css": {
