@@ -55,6 +55,8 @@ model User {
   returnsVoided     Return[]        @relation("ReturnVoidedBy")
   invoicesCreated   Invoice[]       @relation("InvoiceCreatedBy")
   invoicesCancelled Invoice[]       @relation("InvoiceCancelledBy")
+  paymentsReceived  Payment[]       @relation("PaymentReceivedBy")
+  paymentsVoided    Payment[]       @relation("PaymentVoidedBy")
 
   @@map("users")
 }
@@ -93,6 +95,7 @@ model RentalOrder {
   lines    IssueLine[]
   returns  Return[]
   invoices Invoice[]
+  payments Payment[]
 
   @@index([customerId, status])
   @@index([status, openedOn])
@@ -259,7 +262,8 @@ model Customer {
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  orders RentalOrder[]
+  orders   RentalOrder[]
+  payments Payment[]
 
   @@index([phone])
   @@index([altPhone])
@@ -426,4 +430,48 @@ model InvoiceLine {
 
   @@unique([invoiceId, sortOrder])
   @@map("invoice_lines")
+}
+
+enum PaymentType {
+  ADVANCE
+  PAYMENT
+  REFUND
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  BANK_TRANSFER
+  CHEQUE
+}
+
+/// Money in (ADVANCE before the final invoice, PAYMENT after it) and money
+/// back (REFUND of an excess). Never deleted; the admin voids with a reason.
+model Payment {
+  id           Int         @id @default(autoincrement())
+  receiptNo    String      @unique @map("receipt_no")
+  orderId      Int         @map("order_id")
+  order        RentalOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customerId   Int         @map("customer_id")
+  customer     Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  type         PaymentType
+  mode         PaymentMode
+  amount       Decimal     @db.Decimal(12, 2)
+  /// Always the entry date (Asia/Kolkata); payments are never backdated.
+  paymentDate  DateTime    @map("payment_date") @db.Date
+  reference    String?
+  notes        String?
+  status       LineStatus  @default(ACTIVE)
+  voidedById   Int?        @map("voided_by")
+  voidedBy     User?       @relation("PaymentVoidedBy", fields: [voidedById], references: [id], onDelete: Restrict)
+  voidedAt     DateTime?   @map("voided_at") @db.Timestamptz
+  voidReason   String?     @map("void_reason")
+  receivedById Int         @map("received_by")
+  receivedBy   User        @relation("PaymentReceivedBy", fields: [receivedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([paymentDate])
+  @@map("payments")
 }

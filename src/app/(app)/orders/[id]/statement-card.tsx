@@ -1,14 +1,26 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintLinks } from "@/components/print-links";
 import { formatDate } from "@/lib/dates";
 import { formatINR } from "@/lib/money";
 import type { Statement } from "@/modules/invoices/statement";
 
 /** "How much do I owe so far?" — rent on returned batches plus rent accrued to today on what is still out. */
-export async function StatementCard({ statement: s }: { statement: Statement }) {
+export async function StatementCard({
+  statement: s,
+  orderId,
+  received,
+  refunded,
+}: {
+  statement: Statement;
+  orderId: number;
+  received: number;
+  refunded: number;
+}) {
   const t = await getTranslations("invoices");
   const tr = await getTranslations("returns");
-  const to = await getTranslations("orders");
+  const tp = await getTranslations("payments");
+  const balance = s.total - received + refunded;
   const ml = (await getLocale()) === "ml";
   const name = (p: { name: string; nameMl: string | null }, serial: string | null) => `${ml && p.nameMl ? p.nameMl : p.name}${serial ? ` ${serial}` : ""}`;
 
@@ -17,6 +29,9 @@ export async function StatementCard({ statement: s }: { statement: Statement }) 
       <CardHeader>
         <CardTitle>{t("statementTitle")}</CardTitle>
         <CardDescription>{t("statementAsOf", { date: formatDate(s.today) })}</CardDescription>
+        <CardAction>
+          <PrintLinks doc="statement" id={orderId} />
+        </CardAction>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm" data-testid="statement">
         {s.out.length > 0 && (
@@ -73,8 +88,17 @@ export async function StatementCard({ statement: s }: { statement: Statement }) 
           <dd className="text-right">{formatINR(s.damageTotal)}</dd>
           <dt className="font-semibold">{t("totalSoFar")}</dt>
           <dd className="text-right text-base font-semibold">{formatINR(s.total)}</dd>
+          <dt>{tp("received")}</dt>
+          <dd className="text-right">− {formatINR(received)}</dd>
+          {refunded > 0 && (
+            <>
+              <dt>{tp("refunded")}</dt>
+              <dd className="text-right">+ {formatINR(refunded)}</dd>
+            </>
+          )}
+          <dt className="border-t pt-1 font-semibold">{balance < 0 ? tp("excess") : tp("balance")}</dt>
+          <dd className="border-t pt-1 text-right text-base font-semibold">{formatINR(Math.abs(balance))}</dd>
         </dl>
-        <p className="text-xs text-muted-foreground">{to("billingSoon")}</p>
       </CardContent>
     </Card>
   );

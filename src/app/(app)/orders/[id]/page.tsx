@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { PrintLinks } from "@/components/print-links";
 import { businessToday, formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
 import { formatINR, toPaise } from "@/lib/money";
 import { can } from "@/lib/permissions";
@@ -13,10 +14,14 @@ import { formatPhone } from "@/modules/customers/phone";
 import { orderInvoices } from "@/modules/invoices/queries";
 import { buildStatement } from "@/modules/invoices/statement";
 import { getOrder, issuableProducts, orderAuditTrail } from "@/modules/orders/queries";
+import { orderPayments, sumPayments } from "@/modules/payments/queries";
+import { balance as balanceOf } from "@/modules/billing/engine";
 import { OrderStatusBadge } from "../status-badge";
 import { CancelOrderForm, IssueForm, VoidLineForm } from "./order-forms";
 import { GenerateInvoiceForm } from "./invoice-forms";
 import { ReturnForm, VoidReturnForm } from "./return-form";
+import { PaymentForm, RefundForm, VoidPaymentForm } from "./payment-forms";
+import { PaymentsCard } from "./payments-card";
 import { StatementCard } from "./statement-card";
 
 export default async function OrderPage({ params, searchParams }: PageProps<"/orders/[id]">) {
@@ -26,14 +31,16 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
   const order = await getOrder(id);
   if (!order) notFound();
   const isOpen = order.status === "OPEN";
-  const [trail, invoices, products] = await Promise.all([
+  const [trail, invoices, payments, products] = await Promise.all([
     orderAuditTrail(id),
     orderInvoices(id),
+    orderPayments(id),
     isOpen && can(me.role, "issue.create") ? issuableProducts() : Promise.resolve([]),
   ]);
-  const { saved } = await searchParams;
+  const { saved, receipt } = await searchParams;
   const t = await getTranslations("orders");
   const ti = await getTranslations("invoices");
+  const tp = await getTranslations("payments");
   const ml = (await getLocale()) === "ml";
 
   const name = (p: { name: string; nameMl: string | null }) => (ml && p.nameMl ? p.nameMl : p.name);
@@ -48,6 +55,15 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
   const allReturned = isOpen && activeLines.length > 0 && out.length === 0;
   const statement = isOpen && activeLines.length > 0 ? buildStatement(order, businessToday()) : null;
   const liveInvoice = invoices.find((i) => i.status === "ISSUED");
+
+  // Money: the invoice total once billed, otherwise rent and charges accrued to today.
+  const money = sumPayments(payments);
+  const due = liveInvoice ? toPaise(liveInvoice.total) : (statement?.total ?? 0);
+  const balance = balanceOf(due, [money.received], [money.refunded]);
+  const savedReceipt = (saved === "payment" || saved === "refund") && payments.find((p) => String(p.id) === receipt);
+  const voidablePayments = payments
+    .filter((p) => p.status === "ACTIVE")
+    .map((p) => ({ id: p.id, label: `${p.receiptNo} · ${tp(`type.${p.type}`)} · ${formatINR(toPaise(p.amount))}` }));
   const returnable = out.map((l) => ({
     id: l.id,
     label: `${name(l.product)}${l.unit ? ` ${l.unit.serialNo}` : ""}`,
@@ -93,6 +109,12 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
         </p>
       )}
 
+      {savedReceipt && (
+        <p role="status" className="mb-4 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+          {tp(saved === "refund" ? "savedRefund" : "savedPayment", { no: savedReceipt.receiptNo })}
+          <PrintLinks doc="receipt" id={savedReceipt.id} />
+        </p>
+      )}
       {saved === "invoiceCancelled" && (
         <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
           {ti("cancelledNotice")}
@@ -156,11 +178,19 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
           <GenerateInvoiceForm orderId={order.id} total={formatINR(statement.total)} canDiscount={can(me.role, "invoice.discount")} />
         )}
 
-        {statement && can(me.role, "statement.print") && <StatementCard statement={statement} />}
+        {statement && can(me.role, "statement.print") && <StatementCard statement={statement} orderId={order.id} received={money.received} refunded={money.refunded} />}
 
         {isOpen && can(me.role, "return.create") && returnable.length > 0 && (
           <ReturnForm orderId={order.id} lines={returnable} canBackdate={can(me.role, "date.backdate")} today={businessToday()} />
         )}
+
+        {order.status !== "CANCELLED" && (activeLines.length > 0 || payments.length > 0) && (
+          <PaymentsCard payments={payments} due={due} invoiced={!!liveInvoice} received={money.received} refunded={money.refunded} balance={balance} />
+        )}
+        {order.status !== "CANCELLED" && can(me.role, "payment.create") && (isOpen || balance > 0) && (
+          <PaymentForm orderId={order.id} isAdvance={!liveInvoice} due={liveInvoice ? formatINR(balance) : null} />
+        )}
+        {liveInvoice && balance < 0 && can(me.role, "refund.create") && <RefundForm orderId={order.id} excess={formatINR(-balance)} />}
 
         {invoices.length > 0 && (
           <Card className="lg:col-span-2">
@@ -295,6 +325,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
         </Card>
 
         {isOpen && isAdmin && <VoidReturnForm orderId={order.id} returns={voidableReturns} />}
+        {isAdmin && <VoidPaymentForm orderId={order.id} payments={voidablePayments} />}
         {isOpen && isAdmin && <VoidLineForm orderId={order.id} lines={voidable.map((l) => ({ id: l.id, label: lineLabel(l) }))} />}
         {isOpen && can(me.role, "record.cancel") && <CancelOrderForm orderId={order.id} />}
       </div>
