@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    groups:
+      # Minor/patch updates in one PR; majors (Next, Prisma, …) come one by one.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      # Prisma and Next majors need a planned migration (see AGENTS.md).
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+    labels: ["dependencies", "ci"]
