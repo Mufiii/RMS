@@ -220,7 +220,7 @@ Partial unique index: `UNIQUE (order_id) WHERE status = 'ISSUED'`, so an order h
 `doc_type` (`ORDER`,`INVOICE`,`RECEIPT`,`REFUND`), `fiscal_year` (e.g. `2026-27`), `next_value int`. PK `(doc_type, fiscal_year)`. Incremented with `UPDATE … RETURNING` inside the business transaction, which keeps numbering gap-free.
 
 ### settings (single row)
-`id` with `CHECK (id = 1)`, `business_name`, `business_name_ml`, `address`, `address_ml`, `phones`, `email`, `order_prefix`, `invoice_prefix`, `receipt_prefix`, `refund_prefix`, `invoice_terms`, `invoice_terms_ml`, `logo_path`, `print_paper_width_mm` (int, default 80, `CHECK (print_paper_width_mm IN (58, 80))`; A4 may be added later), `updated_by`, `updated_at`.
+`id` with `CHECK (id = 1)`, `business_name`, `business_name_ml`, `address`, `address_ml`, `phones`, `email`, `order_prefix`, `invoice_prefix`, `receipt_prefix`, `refund_prefix`, `invoice_terms`, `invoice_terms_ml`, `logo_data` (bytea, ≤ 300 KB) + `logo_mime` (`image/png` or `image/jpeg`) + `logo_updated_at` (kept in the database so backups cover it), `print_paper_width_mm` (int, default 80, `CHECK (print_paper_width_mm IN (58, 80))`; A4 may be added later), `long_rental_days` (int, default 30, 1–365), `updated_by`, `updated_at`. CHECKs: prefixes `^[A-Z0-9-]{1,10}$` and all four distinct (receipts and refunds share one number column); business name not blank.
 
 ### audit_logs
 `id bigint`, `actor_id` → users, `action` (e.g. `ISSUE_CREATE`, `PAYMENT_VOID`, `RATE_CHANGE`, `BACKDATE`), `entity`, `entity_id`, `summary jsonb` (before/after of the key fields), `reason`, `created_at`. Indexes: `(entity, entity_id)`, `created_at`. The app only ever inserts into this table, never updates or deletes.

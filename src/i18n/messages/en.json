@@ -136,7 +136,11 @@
     "noItems": "Add at least one item",
     "amountInvalid": "Enter an amount like 150 or 150.50",
     "amountPositive": "Enter an amount above zero",
-    "chequeNumberRequired": "Enter the cheque number"
+    "chequeNumberRequired": "Enter the cheque number",
+    "prefixInvalid": "1–10 letters, digits or hyphens (no “/”)",
+    "prefixDuplicate": "Each document needs its own prefix",
+    "emailInvalid": "Enter a valid email address",
+    "daysInvalid": "Enter a whole number of days from 1 to 365"
   },
   "errors": {
     "unexpected": "Something went wrong. Please try again.",
@@ -235,6 +239,12 @@
       "refundTooLarge": "The refund can't be more than the excess of {max}",
       "alreadyVoided": "This payment is already voided",
       "voidRefundFirst": "A refund was paid out against this money — void the refund first"
+    },
+    "settings": {
+      "missing": "Settings are missing — run the setup (seed) first",
+      "logoMissing": "Choose an image file",
+      "logoTooBig": "The logo must be at most {max}",
+      "logoType": "The logo must be a PNG or JPEG image"
     }
   },
   "customers": {
@@ -791,5 +801,47 @@
       "bank_transfer": "Bank transfer",
       "cheque": "Cheque"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "What prints on invoices, statements and receipts, document numbers and the dashboard.",
+    "lastChange": "Last changed by {name} on {date}",
+    "businessTitle": "Business",
+    "businessHint": "Printed at the top of every slip, in Malayalam and English.",
+    "businessName": "Business name (English)",
+    "businessNameMl": "Business name (Malayalam)",
+    "address": "Address (English)",
+    "addressMl": "Address (Malayalam)",
+    "phones": "Phone numbers",
+    "phonesHint": "As they should print, e.g. 98470 12345, 0487 2345678",
+    "email": "Email (optional)",
+    "numbersTitle": "Document numbers",
+    "numbersHint": "Prefixes apply to new numbers only; existing ones keep theirs. Numbering continues without gaps and restarts each financial year (April).",
+    "orderPrefix": "Orders",
+    "invoicePrefix": "Invoices",
+    "receiptPrefix": "Receipts",
+    "refundPrefix": "Refunds",
+    "printTitle": "Printing",
+    "printHint": "Thermal receipt printer roll width, and terms printed at the bottom of invoices.",
+    "paperWidth": "Paper width",
+    "paper80": "80 mm (3 inch), standard",
+    "paper58": "58 mm (2 inch), small",
+    "invoiceTerms": "Invoice terms (English)",
+    "invoiceTermsMl": "Invoice terms (Malayalam)",
+    "dashboardTitle": "Dashboard",
+    "longRentalDays": "Long rental after (days)",
+    "longRentalHint": "Items out this many days or more are listed on the dashboard to follow up.",
+    "save": "Save settings",
+    "saved": "Settings saved",
+    "noChanges": "Nothing changed",
+    "logoTitle": "Logo",
+    "logoHint": "PNG or JPEG, at most 300 KB. Printed in black and white at the top of slips.",
+    "logoAlt": "Current logo",
+    "noLogo": "No logo yet.",
+    "chooseLogo": "Image file",
+    "uploadLogo": "Upload logo",
+    "removeLogo": "Remove logo",
+    "logoSaved": "Logo saved",
+    "logoRemoved": "Logo removed"
   }
 }
