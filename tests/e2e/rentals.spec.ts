@@ -141,14 +141,16 @@ test("an order entered by mistake can be cancelled and shows under Cancelled", a
   await expect(main(page).getByText("Cancelled", { exact: true }).first()).toBeVisible();
   await expect(main(page).getByText("Cancelled by Shop Manager")).toBeVisible();
 
-  await page.goto("/orders");
-  await expect(main(page).locator("ul li")).toHaveCount(2); // the two open ones
-  await main(page).getByRole("link", { name: "Cancelled" }).click();
-  await expect(main(page).locator("ul li")).toHaveCount(1);
+  await page.goto("/orders"); // "All" is the default
+  await expect(page.getByTestId("order-table").locator("tbody tr")).toHaveCount(3);
+  await main(page).getByRole("link", { name: "Open", exact: true }).click();
+  await expect(page.getByTestId("order-table").locator("tbody tr")).toHaveCount(2); // the two open ones
+  await main(page).getByRole("link", { name: "Cancelled", exact: true }).click();
+  await expect(page.getByTestId("order-table").locator("tbody tr")).toHaveCount(1);
   await page.goto("/orders?q=457");
-  await expect(main(page).locator("ul li")).toHaveCount(0); // notes aren't searched…
+  await expect(page.getByTestId("order-table").locator("tbody tr")).toHaveCount(0); // notes aren't searched…
   await page.goto("/orders?q=2");
-  await expect(main(page).locator("ul li")).toHaveCount(1); // …but the order number's last digits are
+  await expect(page.getByTestId("order-table").locator("tbody tr")).toHaveCount(1); // …but the order number's last digits are
 });
 
 test("stock check still agrees after issues and voids", async ({ page }) => {

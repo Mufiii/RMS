@@ -65,7 +65,7 @@ export function ProductForm({
   const [tracking, setTracking] = useState<string>(v.tracking);
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="max-w-3xl">
       <CardContent>
         <form key={JSON.stringify(state.values ?? {})} action={action} className="grid gap-4">
           {isEdit && <input type="hidden" name="id" value={defaults.id} />}

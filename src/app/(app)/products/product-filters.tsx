@@ -66,7 +66,7 @@ export function ProductFilters({
     <form
       role="search"
       action="/products"
-      className="mb-4 flex flex-wrap items-center gap-2"
+      className="flex flex-wrap items-center gap-2 border-b px-5 py-4"
       onSubmit={(e) => {
         e.preventDefault();
         if (timer.current) clearTimeout(timer.current);
@@ -85,7 +85,7 @@ export function ProductFilters({
         }}
         placeholder={t("searchPlaceholder")}
         aria-label={t("search")}
-        className="h-10 max-w-xs"
+        className="max-w-xs"
         autoComplete="off"
       />
       <select
@@ -96,7 +96,7 @@ export function ProductFilters({
           apply({ category: e.target.value });
         }}
         aria-label={t("category")}
-        className="h-10 rounded-lg border border-input bg-transparent px-2.5 text-sm dark:bg-input/30"
+        className="h-10 rounded-lg border border-input bg-card px-3 text-sm dark:bg-input/30"
       >
         <option value="">{t("allCategories")}</option>
         {categories.map((c) => (
@@ -115,11 +115,11 @@ export function ProductFilters({
             setInactive(e.target.checked);
             apply({ inactive: e.target.checked });
           }}
-          className="size-4"
+          className="size-4 accent-primary"
         />
         {t("showInactive")}
       </label>
-      <Button type="submit" variant="outline" size="lg" className="h-10">
+      <Button type="submit" variant="outline" size="lg">
         {pending ? <Loader2 className="animate-spin" /> : <Search />}
         <span className="sr-only sm:not-sr-only">{t("search")}</span>
       </Button>

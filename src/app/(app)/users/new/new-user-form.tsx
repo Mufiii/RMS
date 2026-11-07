@@ -15,7 +15,7 @@ export function NewUserForm() {
   const v = state.values ?? {};
   const err = state.fieldErrors ?? {};
   return (
-    <Card className="max-w-lg">
+    <Card className="max-w-3xl">
       <CardContent>
         <form action={action} className="grid gap-4">
           <FormMessage message={state.message} />

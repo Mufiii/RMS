@@ -24,6 +24,7 @@ describe("permission map (docs/01-requirements.md §6)", () => {
   });
 
   it.each([
+    "customer.delete",
     "product.write",
     "rate.write",
     "stock.adjust",

@@ -22,12 +22,12 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
     <>
       <PageHeader title={t("title")} />
       {rows.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+        <p className="rounded-xl border bg-card px-5 py-10 text-center text-muted-foreground">{t("empty")}</p>
       ) : (
-        <div className="rounded-xl border">
+        <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_oklch(0.2_0.02_262/0.05)]">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead>{t("when")}</TableHead>
                 <TableHead>{t("who")}</TableHead>
                 <TableHead>{t("action")}</TableHead>

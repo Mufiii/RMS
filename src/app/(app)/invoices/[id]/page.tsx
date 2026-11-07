@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { PrintLinks } from "@/components/print-links";
 import { orderPayments, sumPayments } from "@/modules/payments/queries";
 import { formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
@@ -34,11 +34,8 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
 
   return (
     <>
-      <Link href={`/orders/${inv.order.id}`} className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {inv.orderNo}
-      </Link>
       <PageHeader
+        back={{ href: `/orders/${inv.order.id}`, label: inv.orderNo }}
         title={inv.invoiceNo}
         actions={
           <>
@@ -58,21 +55,19 @@ export default async function InvoicePage({ params, searchParams }: PageProps<"/
       </PageHeader>
 
       {(saved === "created" || saved === "reissued") && (
-        <p role="status" className="mb-4 max-w-3xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {t(saved)}
-        </p>
+        <Notice tone="success" className="max-w-4xl">{t(saved)}</Notice>
       )}
       {cancelled && (
-        <p className="mb-4 max-w-3xl rounded-lg bg-muted px-3 py-2 text-sm" data-testid="cancelled-notice">
+        <Notice tone="info" className="max-w-4xl" data-testid="cancelled-notice">
           {t("cancelledBy", {
             name: inv.cancelledBy?.fullName ?? "—",
             date: inv.cancelledAt ? formatDateTime(inv.cancelledAt) : "",
             reason: inv.cancelReason ?? "",
           })}
-        </p>
+        </Notice>
       )}
 
-      <div className="grid max-w-3xl gap-4">
+      <div className="grid max-w-4xl gap-5">
         <Card className={cn(cancelled && "opacity-70")}>
           <CardContent className="grid gap-4 text-sm">
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[8rem_1fr]">

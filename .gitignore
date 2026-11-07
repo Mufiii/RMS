@@ -14,3 +14,6 @@ next-env.d.ts
 /src/generated/
 /.next-e2e/
 /.next-devsmoke/
+
+# Impeccable design-check screenshots (local only)
+/.impeccable/review/

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { PrintLinks } from "@/components/print-links";
 import { businessToday, formatDate, formatDateTime, fromDbDate } from "@/lib/dates";
 import { formatINR, toPaise } from "@/lib/money";
@@ -82,11 +82,8 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
 
   return (
     <>
-      <Link href="/orders" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {t("title")}
-      </Link>
-      <PageHeader title={order.orderNo} actions={<OrderStatusBadge status={order.status} label={t(`statusName.${order.status}`)} className="h-8 px-3 text-sm" />}>
+      <PageHeader
+        back={{ href: "/orders", label: t("title") }} title={order.orderNo} actions={<OrderStatusBadge status={order.status} label={t(`statusName.${order.status}`)} className="h-8 px-3 text-sm" />}>
         <Link href={`/customers/${order.customer.id}`} className="font-medium text-foreground underline-offset-4 hover:underline">
           #{order.customer.id} {order.customer.name}
         </Link>{" "}
@@ -95,33 +92,28 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
       </PageHeader>
 
       {saved === "created" && (
-        <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {t("createdOrder")}
-        </p>
+        <Notice tone="success">{t("createdOrder")}</Notice>
       )}
       {order.status === "CANCELLED" && (
-        <p className="mb-4 max-w-5xl rounded-lg bg-muted px-3 py-2 text-sm">
+        <Notice tone="info">
           {t("cancelledBy", {
             name: order.cancelledBy?.fullName ?? "—",
             date: order.cancelledAt ? formatDateTime(order.cancelledAt) : "",
             reason: order.cancelReason ?? "",
           })}
-        </p>
+        </Notice>
       )}
 
       {savedReceipt && (
-        <p role="status" className="mb-4 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+        <Notice tone="success" action={<PrintLinks doc="receipt" id={savedReceipt.id} />}>
           {tp(saved === "refund" ? "savedRefund" : "savedPayment", { no: savedReceipt.receiptNo })}
-          <PrintLinks doc="receipt" id={savedReceipt.id} />
-        </p>
+        </Notice>
       )}
       {saved === "invoiceCancelled" && (
-        <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {ti("cancelledNotice")}
-        </p>
+        <Notice tone="success">{ti("cancelledNotice")}</Notice>
       )}
       {order.status === "CLOSED" && liveInvoice && (
-        <p className="mb-4 max-w-5xl rounded-lg bg-muted px-3 py-2 text-sm" data-testid="closed-notice">
+        <Notice tone="info" data-testid="closed-notice">
           {ti.rich("closedWith", {
             no: liveInvoice.invoiceNo,
             total: formatINR(toPaise(liveInvoice.total)),
@@ -131,15 +123,13 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
               </Link>
             ),
           })}
-        </p>
+        </Notice>
       )}
       {allReturned && (
-        <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {tr("allReturned")}
-        </p>
+        <Notice tone="success">{tr("allReturned")}</Notice>
       )}
 
-      <div className="grid max-w-5xl gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>{t("itemsOutTitle")}</CardTitle>

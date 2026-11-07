@@ -48,7 +48,10 @@
     "forbiddenTitle": "Access denied",
     "forbiddenBody": "Your account does not have permission to open this page.",
     "goHome": "Go to start page",
-    "signedInAs": "Signed in as {name}"
+    "signedInAs": "Signed in as {name}",
+    "panelOrders": "Issue, return and bill rentals",
+    "panelMoney": "Payments, receipts and invoices",
+    "panelLanguage": "Works in English and Malayalam"
   },
   "roles": {
     "ADMIN": "Admin",
@@ -111,10 +114,46 @@
     "days": "{count, plural, =1 {1 day} other {# days}}",
     "since": "since {date}",
     "rentSoFar": "{amount} so far",
-    "weekTitle": "Collections, last 7 days",
-    "net": "Net",
     "reportsLink": "All reports",
-    "call": "Call"
+    "call": "Call",
+    "stockTitle": "Stock status",
+    "stockTotal": "pieces owned",
+    "stockHint": "Every piece you own, by where it is now",
+    "stock": {
+      "available": "Available",
+      "onRent": "On rent",
+      "tooLong": "Out {days}+ days",
+      "repair": "Under repair"
+    },
+    "trendTitle": "Money collected, last 6 months",
+    "trendHint": "Payments received minus refunds",
+    "collected": "Collected",
+    "recentRentalsTitle": "Recent rentals",
+    "recentPaymentsTitle": "Recent payments",
+    "viewAll": "View all",
+    "noRentals": "No rentals yet.",
+    "noPayments": "No payments yet.",
+    "col": {
+      "order": "Order",
+      "customer": "Customer",
+      "item": "Item",
+      "from": "From",
+      "to": "To",
+      "status": "Status",
+      "since": "Since",
+      "out": "Out for",
+      "receipt": "Receipt",
+      "date": "Date",
+      "mode": "Mode",
+      "amount": "Amount",
+      "rent": "Rent so far"
+    },
+    "state": {
+      "out": "Out",
+      "partReturned": "Part returned",
+      "returned": "Returned",
+      "tooLong": "Too long"
+    }
   },
   "validation": {
     "required": "This field is required",
@@ -162,7 +201,8 @@
     "customers": {
       "notFound": "Customer not found",
       "duplicatePhone": "This phone number is already used",
-      "hasOpenOrders": "{count, plural, =1 {This customer has an open order} other {This customer has # open orders}} — close or cancel first"
+      "hasOpenOrders": "{count, plural, =1 {This customer has an open order} other {This customer has # open orders}} — close or cancel first",
+      "hasHistory": "This customer has rentals or payments on record and can't be deleted — mark them inactive instead"
     },
     "products": {
       "notFound": "Product not found",
@@ -311,7 +351,33 @@
     "outstandingBilled": "Billed, still due",
     "outstandingCredit": "Paid in excess (refundable)",
     "outstandingOpen": "Open orders so far (rent to today − advances)",
-    "outstandingNone": "Nothing outstanding."
+    "outstandingNone": "Nothing outstanding.",
+    "cardTotal": "Total customers",
+    "cardActive": "Active customers",
+    "cardInactive": "{count, plural, =0 {None inactive} other {# inactive}}",
+    "cardRentals": "Total rentals",
+    "cardRentalsHint": "All orders, cancelled left out",
+    "cardOutstanding": "Total outstanding",
+    "cardOwing": "{count, plural, =0 {Nobody owes} =1 {1 customer owes} other {# customers owe}}",
+    "colName": "Customer name",
+    "colContact": "Contact details",
+    "colRentals": "Total rentals",
+    "colOutstanding": "Outstanding",
+    "colActions": "Actions",
+    "showing": "Showing {from}–{to} of {total}",
+    "actionsFor": "Actions for {name}",
+    "viewDetails": "View details",
+    "delete": "Delete customer",
+    "deleteTitle": "Delete {name}?",
+    "deleteHint": "This permanently removes the customer. It can't be undone.",
+    "deleteConfirm": "Delete",
+    "deleted": "Customer deleted",
+    "cancel": "Cancel",
+    "close": "Close",
+    "cannotDeleteTitle": "{name} can't be deleted",
+    "cannotDeleteHint": "This customer has rentals or payments on record, which must be kept. Mark them inactive instead: they stay in history but can't take new orders.",
+    "cannotDeleteInactive": "This customer has rentals or payments on record, which must be kept. They are already inactive.",
+    "markInactive": "Mark inactive"
   },
   "products": {
     "title": "Products",
@@ -676,7 +742,9 @@
     "totalOut": "Refunded",
     "net": "Net",
     "customer": "Customer",
-    "order": "Order"
+    "order": "Order",
+    "byMode": "By payment mode",
+    "entries": "Receipts and refunds"
   },
   "print": {
     "print": "Print",
@@ -843,5 +911,24 @@
     "removeLogo": "Remove logo",
     "logoSaved": "Logo saved",
     "logoRemoved": "Logo removed"
+  },
+  "quick": {
+    "title": "Quick actions",
+    "newOrder": {
+      "label": "New order",
+      "hint": "Issue items to a customer"
+    },
+    "returnOrPay": {
+      "label": "Return or payment",
+      "hint": "Open the customer's order"
+    },
+    "newCustomer": {
+      "label": "New customer",
+      "hint": "Add name and phone"
+    },
+    "todayPayments": {
+      "label": "Today's payments",
+      "hint": "Cash, UPI and others"
+    }
   }
 }

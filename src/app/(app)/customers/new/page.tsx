@@ -10,7 +10,7 @@ export default async function NewCustomerPage({ searchParams }: PageProps<"/cust
   const { phone } = await searchParams;
   return (
     <>
-      <PageHeader title={t("new")} />
+      <PageHeader title={t("new")} back={{ href: "/customers", label: t("title") }} />
       <CustomerForm
         defaults={{
           name: "",

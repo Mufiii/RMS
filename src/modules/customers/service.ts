@@ -97,9 +97,36 @@ export async function updateCustomer(
 }
 
 /**
- * Customers are never deleted (docs/01-requirements.md §9). Inactive customers
- * stay in history and search (filtered), but can't take new orders, and a
- * customer with an open order can't be deactivated.
+ * Permanently removes a customer who has no orders (even cancelled ones) and
+ * no payments, e.g. a duplicate or a mistake (docs/01-requirements.md §9).
+ * Anyone with history must be deactivated instead. The audit row keeps the
+ * deleted details.
+ */
+export async function deleteCustomer(actor: Actor, id: number) {
+  return withTx(async (tx) => {
+    const locked = await tx.$queryRaw<{ id: number }[]>`SELECT id FROM "customers" WHERE id = ${id} FOR UPDATE`;
+    if (locked.length === 0) throw new DomainError("customers.notFound");
+    // New orders lock the customer FOR SHARE, so this check can't race them; payments
+    // always belong to an order. The Restrict foreign keys are the final backstop.
+    const orders = await tx.rentalOrder.count({ where: { customerId: id } });
+    const payments = await tx.payment.count({ where: { customerId: id } });
+    if (orders + payments > 0) throw new DomainError("customers.hasHistory");
+    const before = await tx.customer.delete({ where: { id } });
+    await writeAudit(tx, {
+      actorId: actor.id,
+      action: "CUSTOMER_DELETE",
+      entity: "customer",
+      entityId: id,
+      summary: Object.fromEntries(AUDITED_FIELDS.map((f) => [f, before[f]])),
+    });
+    return before;
+  });
+}
+
+/**
+ * Customers with history are never deleted (docs/01-requirements.md §9).
+ * Inactive customers stay in history and search (filtered), but can't take
+ * new orders, and a customer with an open order can't be deactivated.
  */
 export async function setCustomerActive(actor: Actor, id: number, active: boolean, reason: string | null) {
   return withTx(async (tx) => {
