@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@/generated/prisma/client";
 import type { PaymentMode } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { fromDbDate, toDbDate } from "@/lib/dates";
@@ -61,14 +62,16 @@ export async function paymentsOn(date: string) {
  * Invoiced orders use the invoice total; open orders use rent accrued to
  * `today` (the running statement). Cancelled orders are left out.
  */
-export async function orderBalances(customerId: number, today: string) {
+/** Balances of every non-cancelled order matching `where` (one customer, or the whole shop). */
+export async function balancesFor(where: Prisma.RentalOrderWhereInput, today: string) {
   const orders = await db.rentalOrder.findMany({
-    where: { customerId, status: { not: "CANCELLED" } },
+    where: { AND: [where, { status: { not: "CANCELLED" } }] },
     orderBy: [{ openedOn: "asc" }, { id: "asc" }],
     select: {
       id: true,
       orderNo: true,
       status: true,
+      customerId: true,
       invoices: { where: { status: "ISSUED" }, select: { id: true, invoiceNo: true, total: true } },
       payments: { select: { type: true, status: true, amount: true } },
       lines: {
@@ -96,8 +99,14 @@ export async function orderBalances(customerId: number, today: string) {
         .map((l) => ({ qtyOutstanding: l.quantity - l.qtyReturned, ratePaise: toPaise(l.dailyRate), issueDate: fromDbDate(l.issue.issueDate) }));
       due = statementTotals(returned, out, today).total;
     }
-    return { id: o.id, orderNo: o.orderNo, status: o.status, invoice, due, received, refunded, balance: balance(due, [received], [refunded]) };
+    return { id: o.id, orderNo: o.orderNo, status: o.status, customerId: o.customerId, invoice, due, received, refunded, balance: balance(due, [received], [refunded]) };
   });
+  return rows;
+}
+export type OrderBalance = Awaited<ReturnType<typeof balancesFor>>[number];
+
+/** Totals over order balances: billed and unpaid, excess held, and open orders so far. */
+export function summarizeBalances(rows: OrderBalance[]) {
   const invoiced = rows.filter((r) => r.invoice);
   const open = rows.filter((r) => !r.invoice);
   return {
@@ -109,4 +118,8 @@ export async function orderBalances(customerId: number, today: string) {
     /** Open orders: rent so far minus advances. */
     openSoFar: open.reduce((s, r) => s + r.balance, 0),
   };
+}
+
+export async function orderBalances(customerId: number, today: string) {
+  return summarizeBalances(await balancesFor({ customerId }, today));
 }
