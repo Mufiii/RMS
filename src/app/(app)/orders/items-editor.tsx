@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,7 @@ export type EditorProduct = {
 
 type Line = { key: number; productId: string; quantity: string; unitIds: number[] };
 
-let nextKey = 1;
-const emptyLine = (): Line => ({ key: nextKey++, productId: "", quantity: "", unitIds: [] });
+const emptyLine = (key: number): Line => ({ key, productId: "", quantity: "", unitIds: [] });
 
 /**
  * Lines of items going out. Posts them as one hidden `lines` JSON field:
@@ -35,7 +34,10 @@ const emptyLine = (): Line => ({ key: nextKey++, productId: "", quantity: "", un
 export function ItemsEditor({ products, error }: { products: EditorProduct[]; error?: string }) {
   const t = useTranslations("orders");
   const ml = useLocale() === "ml";
-  const [lines, setLines] = useState<Line[]>(() => [emptyLine()]);
+  // Keys are per editor, so the first line is the same on the server and the client (no hydration mismatch).
+  const uid = useId();
+  const nextKey = useRef(1);
+  const [lines, setLines] = useState<Line[]>(() => [emptyLine(0)]);
   const byId = new Map(products.map((p) => [String(p.id), p]));
   const label = (p: EditorProduct) => (ml && p.nameMl ? p.nameMl : p.name);
 
@@ -73,11 +75,11 @@ export function ItemsEditor({ products, error }: { products: EditorProduct[]; er
           <div key={line.key} className="grid gap-3 rounded-lg border p-3" data-testid="item-line">
             <div className="flex items-start gap-2">
               <div className="grid flex-1 gap-1.5">
-                <Label htmlFor={`product-${line.key}`} className="sr-only">
+                <Label htmlFor={`${uid}-product-${line.key}`} className="sr-only">
                   {t("product")} {i + 1}
                 </Label>
                 <select
-                  id={`product-${line.key}`}
+                  id={`${uid}-product-${line.key}`}
                   aria-label={`${t("product")} ${i + 1}`}
                   value={line.productId}
                   onChange={(e) => update(line.key, { productId: e.target.value, quantity: "", unitIds: [] })}
@@ -118,9 +120,9 @@ export function ItemsEditor({ products, error }: { products: EditorProduct[]; er
 
             {p?.tracking === "QUANTITY" && (
               <div className="grid max-w-40 gap-1.5">
-                <Label htmlFor={`qty-${line.key}`}>{t("quantity")}</Label>
+                <Label htmlFor={`${uid}-qty-${line.key}`}>{t("quantity")}</Label>
                 <Input
-                  id={`qty-${line.key}`}
+                  id={`${uid}-qty-${line.key}`}
                   type="number"
                   inputMode="numeric"
                   min={1}
@@ -169,7 +171,7 @@ export function ItemsEditor({ products, error }: { products: EditorProduct[]; er
         );
       })}
       {lines.length < products.length && (
-        <Button type="button" variant="outline" className="justify-self-start" onClick={() => setLines((ls) => [...ls, emptyLine()])}>
+        <Button type="button" variant="outline" className="justify-self-start" onClick={() => setLines((ls) => [...ls, emptyLine(nextKey.current++)])}>
           <Plus />
           {t("addItem")}
         </Button>

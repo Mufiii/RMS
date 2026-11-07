@@ -34,3 +34,59 @@ export function lineRent(quantity: number, ratePaise: Paise, dayCount: number): 
   if (!Number.isSafeInteger(rent)) throw new RangeError("rent out of range");
   return rent;
 }
+
+/** Rent accrued so far on pieces still out, counted up to `today` (running statements only). */
+export function accruedRent(qtyOutstanding: number, ratePaise: Paise, issueDate: string, today: string): Paise {
+  if (qtyOutstanding === 0) return 0;
+  return lineRent(qtyOutstanding, ratePaise, days(issueDate, today));
+}
+
+export type InvoiceTotals = { rentTotal: Paise; damageTotal: Paise; subtotal: Paise; discount: Paise; total: Paise };
+
+/** total = Σ rent + Σ damage − discount; the discount is a fixed amount, 0 ≤ discount ≤ subtotal. */
+export function invoiceTotals(lines: { rent: Paise; damage: Paise }[], discount: Paise = 0): InvoiceTotals {
+  let rentTotal = 0;
+  let damageTotal = 0;
+  for (const l of lines) {
+    if (!Number.isInteger(l.rent) || l.rent < 0 || !Number.isInteger(l.damage) || l.damage < 0) {
+      throw new RangeError("line amounts must be non-negative paise");
+    }
+    rentTotal += l.rent;
+    damageTotal += l.damage;
+  }
+  const subtotal = rentTotal + damageTotal;
+  if (!Number.isSafeInteger(subtotal)) throw new RangeError("total out of range");
+  if (!Number.isInteger(discount) || discount < 0) throw new RangeError("discount must be non-negative paise");
+  if (discount > subtotal) throw new RangeError("discount exceeds the invoice amount");
+  return { rentTotal, damageTotal, subtotal, discount, total: subtotal - discount };
+}
+
+/**
+ * Running statement of an open order up to `today`: returned batches carry
+ * their recorded rent and charges; pieces still out accrue rent to today.
+ */
+export function statementTotals(
+  returned: { rent: Paise; damage: Paise }[],
+  out: { qtyOutstanding: number; ratePaise: Paise; issueDate: string }[],
+  today: string,
+) {
+  const accrued = out.map((o) => accruedRent(o.qtyOutstanding, o.ratePaise, o.issueDate, today));
+  const returnedTotals = invoiceTotals(returned);
+  const accruedTotal = accrued.reduce((s, a) => s + a, 0);
+  return {
+    accrued,
+    returnedRent: returnedTotals.rentTotal,
+    accruedRent: accruedTotal,
+    damageTotal: returnedTotals.damageTotal,
+    total: returnedTotals.subtotal + accruedTotal,
+  };
+}
+
+/**
+ * balance = amount due − Σ money in + Σ refunds. Positive: the customer owes;
+ * negative: the shop holds an excess (refundable once the invoice exists).
+ */
+export function balance(amountDue: Paise, received: Paise[], refunded: Paise[] = []): Paise {
+  const sum = (xs: Paise[]) => xs.reduce((s, x) => s + x, 0);
+  return amountDue - sum(received) + sum(refunded);
+}

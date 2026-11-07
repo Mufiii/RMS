@@ -9,7 +9,7 @@ Status: **built 2026-11-06**, awaiting demo sign-off.
 | **Record return** | admin, staff | One box per item still out. For counted items, type how many came back **Good / Damaged / Lost**. For a serial unit, choose Not returned / Good / Damaged / Lost. Damaged or lost pieces show a **charge (₹)** and a **note** field. "All back in good condition" fills everything in one tap. Admins also get a **Return date** (backdating) |
 | **Returns** history | everyone | Every return: date, who received it, each piece with its condition, days, **rent** and charge, notes. Voided returns are struck through with who and why |
 | **Void a return** | admin | Pick the return, give a reason |
-| Banner | | "Everything on this order has been returned" once nothing is out. The final invoice follows in Step 6 |
+| Banner | | "Everything on this order has been returned" once nothing is out. The final invoice is generated from here (Step 6) |
 
 ## Rules
 
@@ -21,7 +21,7 @@ Status: **built 2026-11-06**, awaiting demo sign-off.
   - **Lost:** written off (`qty_out −= n`, `qty_owned −= n`, ledger row `RETURN_LOST`; unit → LOST). Loss charge (may be ₹0, e.g. if replaced), **note required**
   - Good pieces can't carry a charge (DB CHECK). Return ledger rows always point at their return line (DB CHECK).
 - **Dates:** staff use today. Admins may backdate (audited as `BACKDATE`). Never a future date, never before the line's issue date.
-- **Void a return** (admin, reason): while the order is open (Step 6 adds: and has no active invoice). It reverses everything: quantities go back onto the issue lines, units back to RENTED, and **reversing ledger rows** are appended (the ledger is append-only). It is **refused if the pieces have moved on since**, i.e. re-issued to someone else, repaired, scrapped or written off, so a unit can never be counted twice. Voided returns are kept.
+- **Void a return** (admin, reason): while the order is open and has no live invoice (Step 6). It reverses everything: quantities go back onto the issue lines, units back to RENTED, and **reversing ledger rows** are appended (the ledger is append-only). It is **refused if the pieces have moved on since**, i.e. re-issued to someone else, repaired, scrapped or written off, so a unit can never be counted twice. Voided returns are kept.
 - An issue line that has returns can't be voided (Step 4). Void its returns first.
 
 ## Billing engine (started here, `src/modules/billing/engine.ts`)

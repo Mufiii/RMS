@@ -10,10 +10,14 @@ import { can } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { requirePagePermission } from "@/modules/auth/session";
 import { formatPhone } from "@/modules/customers/phone";
+import { orderInvoices } from "@/modules/invoices/queries";
+import { buildStatement } from "@/modules/invoices/statement";
 import { getOrder, issuableProducts, orderAuditTrail } from "@/modules/orders/queries";
 import { OrderStatusBadge } from "../status-badge";
 import { CancelOrderForm, IssueForm, VoidLineForm } from "./order-forms";
+import { GenerateInvoiceForm } from "./invoice-forms";
 import { ReturnForm, VoidReturnForm } from "./return-form";
+import { StatementCard } from "./statement-card";
 
 export default async function OrderPage({ params, searchParams }: PageProps<"/orders/[id]">) {
   const me = await requirePagePermission("order.create");
@@ -22,12 +26,14 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
   const order = await getOrder(id);
   if (!order) notFound();
   const isOpen = order.status === "OPEN";
-  const [trail, products] = await Promise.all([
+  const [trail, invoices, products] = await Promise.all([
     orderAuditTrail(id),
+    orderInvoices(id),
     isOpen && can(me.role, "issue.create") ? issuableProducts() : Promise.resolve([]),
   ]);
   const { saved } = await searchParams;
   const t = await getTranslations("orders");
+  const ti = await getTranslations("invoices");
   const ml = (await getLocale()) === "ml";
 
   const name = (p: { name: string; nameMl: string | null }) => (ml && p.nameMl ? p.nameMl : p.name);
@@ -40,6 +46,8 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
   const tr = await getTranslations("returns");
   const activeLines = allLines.filter((l) => l.status === "ACTIVE");
   const allReturned = isOpen && activeLines.length > 0 && out.length === 0;
+  const statement = isOpen && activeLines.length > 0 ? buildStatement(order, businessToday()) : null;
+  const liveInvoice = invoices.find((i) => i.status === "ISSUED");
   const returnable = out.map((l) => ({
     id: l.id,
     label: `${name(l.product)}${l.unit ? ` ${l.unit.serialNo}` : ""}`,
@@ -85,6 +93,24 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
         </p>
       )}
 
+      {saved === "invoiceCancelled" && (
+        <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
+          {ti("cancelledNotice")}
+        </p>
+      )}
+      {order.status === "CLOSED" && liveInvoice && (
+        <p className="mb-4 max-w-5xl rounded-lg bg-muted px-3 py-2 text-sm" data-testid="closed-notice">
+          {ti.rich("closedWith", {
+            no: liveInvoice.invoiceNo,
+            total: formatINR(toPaise(liveInvoice.total)),
+            link: (chunks) => (
+              <Link href={`/invoices/${liveInvoice.id}`} className="font-medium underline underline-offset-4">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
+      )}
       {allReturned && (
         <p role="status" className="mb-4 max-w-5xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
           {tr("allReturned")}
@@ -123,12 +149,41 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/or
                 ))}
               </ul>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">{t("billingSoon")}</p>
           </CardContent>
         </Card>
 
+        {allReturned && statement && can(me.role, "invoice.create") && (
+          <GenerateInvoiceForm orderId={order.id} total={formatINR(statement.total)} canDiscount={can(me.role, "invoice.discount")} />
+        )}
+
+        {statement && can(me.role, "statement.print") && <StatementCard statement={statement} />}
+
         {isOpen && can(me.role, "return.create") && returnable.length > 0 && (
           <ReturnForm orderId={order.id} lines={returnable} canBackdate={can(me.role, "date.backdate")} today={businessToday()} />
+        )}
+
+        {invoices.length > 0 && (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>{ti("invoicesTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y text-sm" data-testid="order-invoices">
+                {invoices.map((i) => (
+                  <li key={i.id} className={cn("flex flex-wrap justify-between gap-x-3 py-2", i.status === "CANCELLED" && "text-muted-foreground")}>
+                    <span>
+                      <Link href={`/invoices/${i.id}`} className={cn("font-medium underline-offset-4 hover:underline", i.status === "CANCELLED" && "line-through")}>
+                        {i.invoiceNo}
+                      </Link>{" "}
+                      · {formatDate(fromDbDate(i.invoiceDate))} · {ti(`statusName.${i.status}`)}
+                      {i.cancelReason && <> — “{i.cancelReason}”</>}
+                    </span>
+                    <span className="tabular-nums">{formatINR(toPaise(i.total))}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         )}
 
         <Card className="lg:col-span-2">

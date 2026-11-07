@@ -146,7 +146,7 @@ export async function recordReturn(
 
 /**
  * Admin correction of a wrongly entered return, while the order is open
- * (Step 6 adds: and has no active invoice). Never deletes: the return is
+ * and has no live invoice. Never deletes: the return is
  * marked VOIDED, quantities go back onto the issue lines and every stock
  * effect is reversed, with reversing ledger rows (the ledger is append-only).
  * Refused if the returned pieces have since moved on (re-issued, repaired or
@@ -157,6 +157,8 @@ export async function voidReturn(actor: Actor, input: { returnId: number; reason
     const found = await tx.return.findUnique({ where: { id: input.returnId }, select: { orderId: true } });
     if (!found) throw new DomainError("returns.notFound");
     const order = await lockOrder(tx, found.orderId);
+    // A return that is on a live invoice can't change: cancel the invoice first.
+    if (await tx.invoice.count({ where: { orderId: order.id, status: "ISSUED" } })) throw new DomainError("returns.hasInvoice");
     if (order.status !== "OPEN") throw new DomainError("orders.notOpen");
     const ret = await tx.return.findUniqueOrThrow({
       where: { id: input.returnId },

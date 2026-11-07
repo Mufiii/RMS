@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { days, lineRent } from "./engine";
+import { accruedRent, balance, days, invoiceTotals, lineRent, statementTotals } from "./engine";
 
 describe("days (calendar-inclusive)", () => {
   it.each([
@@ -44,5 +44,63 @@ describe("lineRent (integer paise)", () => {
     expect(() => lineRent(1, 0, 1)).toThrow();
     expect(() => lineRent(1, 800, 0)).toThrow();
     expect(() => lineRent(1.5, 800, 1)).toThrow();
+  });
+});
+
+describe("accruedRent (running statement)", () => {
+  it("counts the pieces still out up to today, inclusive", () => {
+    expect(accruedRent(6, 800, "2026-11-01", "2026-11-07")).toBe(6 * 800 * 7);
+    expect(accruedRent(1, 150000, "2026-11-07", "2026-11-07")).toBe(150000); // issued today = 1 day
+  });
+  it("is zero when nothing is outstanding", () => {
+    expect(accruedRent(0, 800, "2026-11-01", "2026-11-07")).toBe(0);
+  });
+  it("rejects a today before the issue date", () => {
+    expect(() => accruedRent(1, 800, "2026-11-08", "2026-11-07")).toThrow(RangeError);
+  });
+});
+
+describe("invoiceTotals", () => {
+  const lines = [
+    { rent: 9600, damage: 0 },
+    { rent: 24000, damage: 15000 },
+  ];
+  it("sums rent and damage, then takes off a fixed discount", () => {
+    expect(invoiceTotals(lines)).toEqual({ rentTotal: 33600, damageTotal: 15000, subtotal: 48600, discount: 0, total: 48600 });
+    expect(invoiceTotals(lines, 8600).total).toBe(40000);
+  });
+  it("allows a discount of the whole amount but not more", () => {
+    expect(invoiceTotals(lines, 48600).total).toBe(0);
+    expect(() => invoiceTotals(lines, 48601)).toThrow(RangeError);
+  });
+  it("rejects negative or fractional amounts", () => {
+    expect(() => invoiceTotals(lines, -1)).toThrow(RangeError);
+    expect(() => invoiceTotals(lines, 0.5)).toThrow(RangeError);
+    expect(() => invoiceTotals([{ rent: -1, damage: 0 }])).toThrow(RangeError);
+  });
+  it("is exact in paise (no floating-point drift)", () => {
+    const many = Array.from({ length: 1000 }, () => ({ rent: 10, damage: 20 })); // ₹0.10 + ₹0.20, 1000 times
+    expect(invoiceTotals(many).total).toBe(30000);
+  });
+});
+
+describe("statementTotals", () => {
+  it("adds returned rent, charges and rent accrued to today on what is still out", () => {
+    // 10 props at ₹8 from 1 Nov: 4 back on 3 Nov (₹96), 6 still out on 7 Nov (6 × 8 × 7 = ₹336), ₹150 damage.
+    const s = statementTotals([{ rent: 9600, damage: 15000 }], [{ qtyOutstanding: 6, ratePaise: 800, issueDate: "2026-11-01" }], "2026-11-07");
+    expect(s).toEqual({ accrued: [33600], returnedRent: 9600, accruedRent: 33600, damageTotal: 15000, total: 58200 });
+  });
+  it("grows by one day of rent per day", () => {
+    const out = [{ qtyOutstanding: 2, ratePaise: 150000, issueDate: "2026-11-01" }];
+    expect(statementTotals([], out, "2026-11-08").total - statementTotals([], out, "2026-11-07").total).toBe(300000);
+  });
+});
+
+describe("balance", () => {
+  it("is due − received + refunded", () => {
+    expect(balance(48600, [20000, 10000])).toBe(18600);
+    expect(balance(48600, [50000])).toBe(-1400); // excess held by the shop
+    expect(balance(48600, [50000], [1400])).toBe(0);
+    expect(balance(0, [])).toBe(0);
   });
 });
