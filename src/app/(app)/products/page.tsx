@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ClipboardCheck, Plus, Search, Tags } from "lucide-react";
+import { ClipboardCheck, Plus, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { formatINR, toPaise } from "@/lib/money";
 import { can } from "@/lib/permissions";
@@ -11,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { requirePagePermission } from "@/modules/auth/session";
 import { available, countersOf } from "@/modules/inventory/client-safe";
 import { listCategories, listProducts } from "@/modules/products/queries";
+import { ProductFilters } from "./product-filters";
 
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -27,6 +27,8 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
     listCategories(false),
   ]);
   const isAdmin = can(me.role, "product.write");
+  const selected = categories.find((c) => c.id === categoryId);
+  const category = selected ? { label: ml && selected.nameMl ? selected.nameMl : selected.name } : null;
 
   return (
     <>
@@ -54,43 +56,45 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
         }
       />
 
-      <form role="search" action="/products" className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          name="q"
-          type="search"
-          defaultValue={q}
-          placeholder={t("searchPlaceholder")}
-          aria-label={t("search")}
-          className="h-10 max-w-xs"
-          autoComplete="off"
-        />
-        <select
-          name="category"
-          defaultValue={categoryId ?? ""}
-          aria-label={t("category")}
-          className="h-10 rounded-lg border border-input bg-transparent px-2.5 text-sm dark:bg-input/30"
-        >
-          <option value="">{t("allCategories")}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {ml && c.nameMl ? c.nameMl : c.name}
-            </option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" name="inactive" value="1" defaultChecked={includeInactive} className="size-4" />
-          {t("showInactive")}
-        </label>
-        <Button type="submit" variant="outline" size="lg" className="h-10">
-          <Search />
-          <span className="sr-only sm:not-sr-only">{t("search")}</span>
-        </Button>
-        <span className="ml-auto text-sm text-muted-foreground">{t("results", { count: products.length })}</span>
-      </form>
+      <ProductFilters
+        q={q}
+        categoryId={categoryId}
+        includeInactive={includeInactive}
+        categories={categories.map((c) => ({ id: c.id, label: ml && c.nameMl ? c.nameMl : c.name }))}
+        resultsLabel={t("results", { count: products.length })}
+      />
 
       {products.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
-          {q || categoryId ? t("noMatch") : t("empty")}
+        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed p-10 text-center text-muted-foreground" data-testid="no-products">
+          <p>
+            {!q && !categoryId && !includeInactive
+              ? t("empty")
+              : q && category
+                ? t("noMatchIn", { q, category: category.label })
+                : category
+                  ? t("noneInCategory", { category: category.label })
+                  : t("noMatchQ", { q })}
+          </p>
+          {(q || categoryId) && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {q && categoryId && (
+                <Link href={`/products?q=${encodeURIComponent(q)}${includeInactive ? "&inactive=1" : ""}`} className={buttonVariants({ variant: "outline" })}>
+                  {t("searchAllCategories")}
+                </Link>
+              )}
+              {!includeInactive && (
+                <Link
+                  href={`/products?${new URLSearchParams({ ...(q ? { q } : {}), ...(categoryId ? { category: String(categoryId) } : {}), inactive: "1" })}`}
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  {t("includeInactive")}
+                </Link>
+              )}
+              <Link href="/products" className={buttonVariants({ variant: "ghost" })}>
+                {t("clearFilters")}
+              </Link>
+            </div>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border">

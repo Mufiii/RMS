@@ -341,7 +341,6 @@
     "showInactive": "Show inactive",
     "results": "{count, plural, =0 {No products} =1 {1 product} other {# products}}",
     "empty": "No products yet.",
-    "noMatch": "No products match your search.",
     "inactiveBadge": "inactive",
     "details": "Details",
     "created": "Product added",
@@ -375,7 +374,13 @@
     "movement": "Movement",
     "change": "Change",
     "by": "By",
-    "unit": "Unit"
+    "unit": "Unit",
+    "noMatchIn": "No products match “{q}” in {category}.",
+    "noneInCategory": "No products in {category}.",
+    "noMatchQ": "No products match “{q}”.",
+    "searchAllCategories": "Search all categories",
+    "includeInactive": "Include inactive",
+    "clearFilters": "Clear filters"
   },
   "categories": {
     "title": "Categories",
