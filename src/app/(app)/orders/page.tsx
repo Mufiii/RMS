@@ -8,7 +8,6 @@ import { EmptyState } from "@/components/empty-state";
 import { FilterTabs } from "@/components/filter-tabs";
 import { ListPagination, ListToolbar, SearchForm } from "@/components/list-controls";
 import { PageHeader } from "@/components/page-header";
-import { QuickActions } from "@/components/quick-actions";
 import { SlipNo } from "@/components/slip-no";
 import { formatDate, fromDbDate } from "@/lib/dates";
 import { requirePagePermission } from "@/modules/auth/session";
@@ -20,7 +19,7 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "
 const FILTERS: OrderStatusFilter[] = ["ALL", "OPEN", "CLOSED", "CANCELLED"];
 
 export default async function OrdersPage({ searchParams }: PageProps<"/orders">) {
-  const user = await requirePagePermission("order.create");
+  await requirePagePermission("order.create");
   const t = await getTranslations("orders");
   const sp = await searchParams;
   const q = one(sp.q).slice(0, 100);
@@ -53,7 +52,6 @@ export default async function OrdersPage({ searchParams }: PageProps<"/orders">)
 
       <div className="grid gap-5">
         {/* Staff land here: the day's jobs one click away. */}
-        {user.role === "STAFF" && <QuickActions role={user.role} skip={["newOrder"]} />}
 
         <Card className="gap-0 py-0">
           <ListToolbar>

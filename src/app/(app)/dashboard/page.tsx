@@ -5,7 +5,6 @@ import { ArrowRight, Boxes, Clock, IndianRupee, Phone, ReceiptText } from "lucid
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/page-header";
-import { QuickActions } from "@/components/quick-actions";
 import { SlipNo } from "@/components/slip-no";
 import { Pill, StatTile as Tile, type Tone } from "@/components/stat-tile";
 import { businessToday, formatDate } from "@/lib/dates";
@@ -32,7 +31,7 @@ function ViewAll({ href, children }: { href: string; children: ReactNode }) {
 
 /** Owner's end-of-day view (admin only): what is out, what came in, what is owed, who to call. */
 export default async function DashboardPage() {
-  const user = await requirePagePermission("dashboard.view");
+  await requirePagePermission("dashboard.view");
   const t = await getTranslations("dashboard");
   const tMode = await getTranslations("payments.mode");
   const tType = await getTranslations("payments.type");
@@ -58,8 +57,6 @@ export default async function DashboardPage() {
       </PageHeader>
 
       <div className="grid gap-5">
-        <QuickActions role={user.role} />
-
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <Tile compact testId="tile-out" tone="blue" icon={Boxes} label={t("piecesOut")} value={String(d.piecesOut)} detail={t("openOrders", { count: d.openOrders })} href="/orders?status=OPEN" />
           <Tile
