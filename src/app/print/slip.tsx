@@ -32,7 +32,22 @@ export function Row({ k, children, strong }: { k: PrintKey; children: ReactNode;
  * printable) or 58 mm, single column, as long as the content.
  */
 export async function Slip({ title, banner, children }: { title: PrintKey; banner?: PrintKey | null; children: ReactNode }) {
-  const s = await db.settings.findUnique({ where: { id: 1 } });
+  // Everything but the logo bytes, which the <img> fetches from /api/logo.
+  const s = await db.settings.findUnique({
+    where: { id: 1 },
+    select: {
+      businessName: true,
+      businessNameMl: true,
+      address: true,
+      addressMl: true,
+      phones: true,
+      invoiceTerms: true,
+      invoiceTermsMl: true,
+      printPaperWidthMm: true,
+      logoMime: true,
+      logoUpdatedAt: true,
+    },
+  });
   const width = s?.printPaperWidthMm ?? 80;
   const content = width === 58 ? 48 : 72;
   return (
@@ -41,6 +56,7 @@ export async function Slip({ title, banner, children }: { title: PrintKey; banne
         @page { margin: 0; }
         html, body { background: #fff !important; color: #000 !important; }
         .slip { width: ${content}mm; margin: 0 auto; padding: 3mm ${(width - content) / 2}mm 6mm; font-size: 11px; line-height: 1.35; }
+        .slip .logo { display: block; max-width: 60%; max-height: 22mm; margin: 0 auto 1.5mm; filter: grayscale(1) contrast(1.4); }
         .slip h1 { font-size: 15px; font-weight: 700; text-align: center; margin: 0; }
         .slip .center { text-align: center; }
         .slip .muted { color: #333; }
@@ -60,6 +76,10 @@ export async function Slip({ title, banner, children }: { title: PrintKey; banne
         <PrintButton />
       </div>
       <main className="slip">
+        {s?.logoMime && (
+          // eslint-disable-next-line @next/next/no-img-element -- print slip: a plain img prints reliably; next/image adds nothing here
+          <img className="logo" src={`/api/logo?v=${s.logoUpdatedAt?.getTime() ?? 0}`} alt="" />
+        )}
         <h1>{s?.businessNameMl || s?.businessName || "Sree Krishna Motors"}</h1>
         {s?.businessNameMl && <div className="center">{s.businessName}</div>}
         {(s?.addressMl || s?.address) && <div className="center muted">{s?.addressMl || s?.address}</div>}

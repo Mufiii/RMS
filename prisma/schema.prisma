@@ -296,26 +296,29 @@ model NumberSequence {
 }
 
 model Settings {
-  id                Int      @id @default(1)
-  businessName      String   @map("business_name")
-  businessNameMl    String?  @map("business_name_ml")
+  id                Int       @id @default(1)
+  businessName      String    @map("business_name")
+  businessNameMl    String?   @map("business_name_ml")
   address           String?
-  addressMl         String?  @map("address_ml")
+  addressMl         String?   @map("address_ml")
   phones            String?
   email             String?
-  orderPrefix       String   @default("ORD") @map("order_prefix")
-  invoicePrefix     String   @default("INV") @map("invoice_prefix")
-  receiptPrefix     String   @default("RCP") @map("receipt_prefix")
-  refundPrefix      String   @default("RFD") @map("refund_prefix")
-  invoiceTerms      String?  @map("invoice_terms")
-  invoiceTermsMl    String?  @map("invoice_terms_ml")
-  logoPath          String?  @map("logo_path")
-  printPaperWidthMm Int      @default(80) @map("print_paper_width_mm")
+  orderPrefix       String    @default("ORD") @map("order_prefix")
+  invoicePrefix     String    @default("INV") @map("invoice_prefix")
+  receiptPrefix     String    @default("RCP") @map("receipt_prefix")
+  refundPrefix      String    @default("RFD") @map("refund_prefix")
+  invoiceTerms      String?   @map("invoice_terms")
+  invoiceTermsMl    String?   @map("invoice_terms_ml")
+  /// Logo kept in the database (PNG/JPEG, ≤ 300 KB), so the nightly backup covers it.
+  logoData          Bytes?    @map("logo_data")
+  logoMime          String?   @map("logo_mime")
+  logoUpdatedAt     DateTime? @map("logo_updated_at") @db.Timestamptz
+  printPaperWidthMm Int       @default(80) @map("print_paper_width_mm")
   /// Dashboard flags items out this many days or more as long rentals (to follow up).
-  longRentalDays    Int      @default(30) @map("long_rental_days")
-  updatedById       Int?     @map("updated_by")
-  updatedBy         User?    @relation(fields: [updatedById], references: [id], onDelete: Restrict)
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  longRentalDays    Int       @default(30) @map("long_rental_days")
+  updatedById       Int?      @map("updated_by")
+  updatedBy         User?     @relation(fields: [updatedById], references: [id], onDelete: Restrict)
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("settings")
 }
