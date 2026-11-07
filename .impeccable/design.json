@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T00:00:00+05:30",
+  "title": "Design System: Sree Krishna Motors – Rental Management",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Krishna Blue", "canonical": "oklch(0.5 0.2 262)", "tonalRamp": ["oklch(0.22 0.09 262)", "oklch(0.32 0.14 262)", "oklch(0.42 0.18 262)", "oklch(0.5 0.2 262)", "oklch(0.62 0.16 262)", "oklch(0.74 0.11 262)", "oklch(0.86 0.06 262)", "oklch(0.95 0.025 262)"] },
+      "ink-rail": { "role": "neutral", "displayName": "Ink Rail", "canonical": "oklch(0.18 0.018 262)", "tonalRamp": ["oklch(0.14 0.015 262)", "oklch(0.18 0.018 262)", "oklch(0.27 0.035 262)", "oklch(0.4 0.03 262)", "oklch(0.55 0.02 262)", "oklch(0.68 0.015 262)", "oklch(0.83 0.012 262)", "oklch(0.95 0.006 262)"] },
+      "paper": { "role": "neutral", "displayName": "Cool Paper", "canonical": "oklch(0.975 0.004 260)" },
+      "paid-green": { "role": "semantic", "displayName": "Paid Green", "canonical": "oklch(0.5 0.13 152)" },
+      "owed-red": { "role": "semantic", "displayName": "Owed Red", "canonical": "oklch(0.54 0.21 27)" },
+      "attention-amber": { "role": "semantic", "displayName": "Attention Amber", "canonical": "oklch(0.56 0.13 62)" }
+    },
+    "typographyMeta": {
+      "page-title": { "displayName": "Page title", "purpose": "The h1 in the top bar." },
+      "stat-value": { "displayName": "Stat value", "purpose": "Big numbers on summary tiles; tabular figures." },
+      "column-label": { "displayName": "Column label", "purpose": "Table headers, uppercase in Latin." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 1px 2px oklch(0.2 0.02 262 / 0.05), 0 4px 12px -4px oklch(0.2 0.02 262 / 0.06)", "purpose": "Every card and work surface." },
+      { "name": "primary-button", "value": "0 1px 2px oklch(0.3 0.15 262 / 0.3)", "purpose": "Blue buttons." },
+      { "name": "primary-tile", "value": "0 2px 8px -2px oklch(0.5 0.2 262 / 0.5)", "purpose": "The blue quick-action tile." }
+    ],
+    "motion": [
+      { "name": "state", "value": "150ms ease", "purpose": "Colour changes on nav, tabs, links." },
+      { "name": "lift", "value": "200ms ease, translateY(-1px)", "purpose": "Hover lift on linked tiles." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px", "note": "Sidebar appears; top bar becomes sticky." },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px", "note": "Summary tiles go four across." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one blue action on a screen; always icon + word.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14M12 5v14\"/></svg>New order</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:10px;background:oklch(0.5 0.2 262);color:#fff;font:500 14px Inter,sans-serif;box-shadow:0 1px 2px oklch(0.3 0.15 262/.3);cursor:pointer;transition:background .15s}.ds-btn-primary:hover{background:color-mix(in oklch,oklch(0.5 0.2 262),black 12%)}.ds-btn-primary:focus-visible{outline:3px solid oklch(0.55 0.2 262/.5);outline-offset:2px}"
+    },
+    {
+      "name": "Slip Number",
+      "kind": "chip",
+      "refersTo": "slip-no",
+      "description": "Signature: a document number set like the stamped number on a paper slip.",
+      "html": "<span class=\"ds-slip\">ORD/2026-27/0001</span>",
+      "css": ".ds-slip{display:inline-flex;padding:1px 6px;border:1px solid oklch(0.5 0.2 262/.25);border-radius:6px;background:oklch(0.95 0.025 262/.6);color:oklch(0.5 0.2 262);font:600 13px Inter,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "description": "Status with icon + word, tinted by meaning.",
+      "html": "<span class=\"ds-pill\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Closed</span>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;background:oklch(0.5 0.13 152/.1);color:oklch(0.5 0.13 152);box-shadow:inset 0 0 0 1px oklch(0.5 0.13 152/.2);font:500 12px Inter,sans-serif}"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "card",
+      "description": "Summary card: tone icon square, label, big tabular value, detail.",
+      "html": "<div class=\"ds-tile\"><span class=\"ds-tile-icon\">₹</span><span><span class=\"ds-tile-label\">Total outstanding</span><span class=\"ds-tile-value\">₹12,400.00</span><span class=\"ds-tile-detail\">3 customers owe</span></span></div>",
+      "css": ".ds-tile{display:flex;gap:16px;align-items:flex-start;padding:20px;background:#fff;border-radius:14px;box-shadow:0 0 0 1px oklch(0.2 0.02 262/.08),0 1px 2px oklch(0.2 0.02 262/.05),0 4px 12px -4px oklch(0.2 0.02 262/.06);font-family:Inter,sans-serif}.ds-tile>span:last-child{display:grid;gap:4px}.ds-tile-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:oklch(0.54 0.21 27/.1);color:oklch(0.54 0.21 27)}.ds-tile-label{font:500 14px Inter;color:oklch(0.48 0.02 262)}.ds-tile-value{font:600 28px/1 Inter;font-variant-numeric:tabular-nums;color:oklch(0.2 0.02 262)}.ds-tile-detail{font-size:13px;color:oklch(0.48 0.02 262)}"
+    },
+    {
+      "name": "Rail Navigation Item",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Sidebar item on the ink rail; active is solid blue.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-nav ds-nav-on\">Orders</a><a class=\"ds-nav\">Customers</a></nav>",
+      "css": ".ds-rail{display:grid;gap:4px;padding:12px;width:232px;background:oklch(0.18 0.018 262)}.ds-nav{display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;color:oklch(0.83 0.012 262);font:15px Inter,sans-serif;transition:background .15s}.ds-nav:hover{background:oklch(0.27 0.035 262);color:#fff}.ds-nav-on{background:oklch(0.55 0.2 262);color:#fff;font-weight:500}"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "40px white field with leading magnifier and blue focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Name, phone or customer number\">",
+      "css": ".ds-input{height:40px;width:320px;padding:0 12px;border:1px solid oklch(0.87 0.01 262);border-radius:10px;background:#fff;font:14px Inter,sans-serif}.ds-input:focus-visible{outline:none;border-color:oklch(0.55 0.2 262);box-shadow:0 0 0 3px oklch(0.55 0.2 262/.5)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The paper register, made calm",
+    "overview": "An ink-black rail beside a cool paper-white working page. Blue marks only what you can act on or what is selected; green, red and amber appear only when they carry meaning. Built for counter staff on a shop PC, in English and Malayalam.",
+    "keyCharacteristics": ["Ink-black rail with blue active item", "Sticky full-bleed top bar on every page", "Work cards: toolbar, edge-to-edge table, pagination", "Document numbers as blue slip chips", "Statuses as icon + word pills"],
+    "rules": [
+      { "name": "The One Blue Rule", "body": "Blue is spent on action, selection and document numbers only; one blue action per screen.", "section": "colors" },
+      { "name": "Meaning, Not Mood", "body": "Green, red and amber only describe values or states, always with an icon or word.", "section": "colors" },
+      { "name": "Malayalam Room", "body": "Line-height 1.65 in Malayalam; wrap labels, never truncate.", "section": "typography" }
+    ],
+    "dos": ["Start every page with PageHeader", "Use SlipNo for document numbers", "Add every string in English and Malayalam"],
+    "donts": ["No per-page max-width on list pages", "No decorative blue", "No state by colour alone", "No links above the top bar"]
+  }
+}
