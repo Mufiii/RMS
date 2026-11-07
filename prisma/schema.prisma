@@ -311,6 +311,8 @@ model Settings {
   invoiceTermsMl    String?  @map("invoice_terms_ml")
   logoPath          String?  @map("logo_path")
   printPaperWidthMm Int      @default(80) @map("print_paper_width_mm")
+  /// Dashboard flags items out this many days or more as long rentals (to follow up).
+  longRentalDays    Int      @default(30) @map("long_rental_days")
   updatedById       Int?     @map("updated_by")
   updatedBy         User?    @relation(fields: [updatedById], references: [id], onDelete: Restrict)
   updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz
