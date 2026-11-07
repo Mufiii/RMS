@@ -159,3 +159,31 @@ test("search by serial number and filter by category", async ({ page }) => {
   await expect(main(page).locator("ul li")).toHaveCount(1);
   await expect(main(page).locator("ul")).toContainText("Steel prop 3 m");
 });
+
+test("filters apply as you go; an empty result says why and widens in one click", async ({ page }) => {
+  await asStaff(page);
+  await page.goto("/products");
+  // The category applies on change: no Search click.
+  await page.getByLabel("Category").selectOption({ label: "Generators" });
+  await expect(page).toHaveURL(/category=\d+/);
+  await expect(main(page).locator("ul li")).toHaveCount(1);
+
+  // Typing searches by itself. "Steel" is a Scaffolding item, so inside Generators nothing matches…
+  await page.getByRole("searchbox").pressSequentially("Steel");
+  await expect(page).toHaveURL(/q=Steel/);
+  await expect(page.getByTestId("no-products")).toContainText("No products match “Steel” in Generators.");
+  await expect(page.getByRole("searchbox")).toHaveValue("Steel");
+
+  // …and one click searches all categories; the dropdown follows.
+  await page.getByRole("link", { name: "Search all categories" }).click();
+  await expect(main(page).locator("ul li")).toHaveCount(1);
+  await expect(main(page).locator("ul")).toContainText("Steel prop 3 m");
+  await expect(page.getByLabel("Category")).toHaveValue("");
+
+  await page.getByLabel("Show inactive").check();
+  await expect(page).toHaveURL(/inactive=1/);
+  await page.goto("/products?q=nothing-like-this");
+  await page.getByRole("link", { name: "Clear filters" }).click();
+  await expect(page).toHaveURL(/\/products$/);
+  await expect(page.getByRole("searchbox")).toHaveValue("");
+});

@@ -66,3 +66,16 @@ export function formatDateTime(d: Date): string {
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   return `${get("day")}-${get("month")}-${get("year")} ${get("hour")}:${get("minute")}`;
 }
+
+/** Calendar arithmetic on business dates: addDays("2026-11-30", 1) = "2026-12-01". */
+export function addDays(iso: string, n: number): string {
+  const d = toDbDate(iso);
+  d.setUTCDate(d.getUTCDate() + n);
+  return fromDbDate(d);
+}
+
+/** First day of the month of a business date. */
+export function monthStart(iso: string): string {
+  if (!isIsoDate(iso)) throw new Error(`Invalid date: ${iso}`);
+  return `${iso.slice(0, 8)}01`;
+}

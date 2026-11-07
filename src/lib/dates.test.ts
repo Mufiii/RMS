@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { businessToday, fiscalYear, formatDate, fromDbDate, isIsoDate, toDbDate } from "./dates";
+import { addDays, businessToday, fiscalYear, formatDate, fromDbDate, isIsoDate, monthStart, toDbDate } from "./dates";
 
 describe("businessToday (Asia/Kolkata)", () => {
   it("rolls over at IST midnight, not UTC midnight", () => {
@@ -40,5 +40,19 @@ describe("ISO date helpers", () => {
 
   it("formats as DD-MM-YYYY", () => {
     expect(formatDate("2026-11-05")).toBe("05-11-2026");
+  });
+});
+
+describe("addDays / monthStart", () => {
+  it("crosses month, year and leap-day boundaries", () => {
+    expect(addDays("2026-11-30", 1)).toBe("2026-12-01");
+    expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+    expect(addDays("2028-03-01", -1)).toBe("2028-02-29");
+    expect(addDays("2026-11-07", -29)).toBe("2026-10-09");
+    expect(addDays("2026-11-07", 0)).toBe("2026-11-07");
+  });
+  it("gives the first of the month", () => {
+    expect(monthStart("2026-11-07")).toBe("2026-11-01");
+    expect(() => monthStart("2026-13-01")).toThrow();
   });
 });
