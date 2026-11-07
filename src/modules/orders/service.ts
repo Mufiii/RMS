@@ -236,7 +236,7 @@ export async function voidIssueLine(actor: Actor, input: { lineId: number; reaso
 
 /**
  * Admin cancel of an order entered by mistake. Allowed only when it has no
- * active issue lines (void them first). Step 7 adds: and no active payments.
+ * active issue lines and no active payments (void those first).
  */
 export async function cancelOrder(actor: Actor, input: { orderId: number; reason: string }) {
   return withTx(async (tx) => {
@@ -244,6 +244,8 @@ export async function cancelOrder(actor: Actor, input: { orderId: number; reason
     if (order.status !== "OPEN") throw new DomainError("orders.notOpen");
     const active = await tx.issueLine.count({ where: { orderId: order.id, status: "ACTIVE" } });
     if (active > 0) throw new DomainError("orders.hasActiveLines", { count: active });
+    const paid = await tx.payment.count({ where: { orderId: order.id, status: "ACTIVE" } });
+    if (paid > 0) throw new DomainError("orders.hasPayments", { count: paid });
     await tx.rentalOrder.update({
       where: { id: order.id },
       data: { status: "CANCELLED", cancelledById: actor.id, cancelledAt: new Date(), cancelReason: input.reason },

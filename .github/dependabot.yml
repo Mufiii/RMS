@@ -14,12 +14,9 @@ updates:
       minor-and-patch:
         update-types: ["minor", "patch"]
     ignore:
-      # Prisma and Next majors need a planned migration (see AGENTS.md).
-      - dependency-name: "prisma"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@prisma/*"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "next"
+      # Major upgrades (Next, Prisma, TypeScript, ESLint, Node types, …) change APIs
+      # and tooling; they are planned and done by hand, never taken automatically.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions

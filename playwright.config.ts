@@ -29,6 +29,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: false,
     timeout: 300_000,
-    env: { DATABASE_URL: testDb, NEXT_DIST_DIR: ".next-e2e" },
+    env: { DATABASE_URL: testDb, NEXT_DIST_DIR: ".next-e2e", PORT: String(PORT) },
   },
 });
