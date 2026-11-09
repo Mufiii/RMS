@@ -47,6 +47,11 @@ describe("resolveEntryDate", () => {
     expect(() => resolveEntryDate(admin, "2026-11-07", today)).toThrow("orders.futureDate");
     expect(() => resolveEntryDate(admin, "2026-02-30", today)).toThrow("orders.dateInvalid");
   });
+
+  it("even an admin can't backdate past the typo guard (e.g. 2006 for 2026)", () => {
+    expect(resolveEntryDate(admin, "2024-11-10", today)).toEqual({ date: "2024-11-10", isBackdated: true });
+    expect(() => resolveEntryDate(admin, "2006-11-06", today)).toThrow("orders.backdateTooOld");
+  });
 });
 
 describe("createOrder + issue", () => {

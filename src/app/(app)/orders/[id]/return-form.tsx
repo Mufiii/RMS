@@ -204,8 +204,17 @@ export function ReturnForm({
           </ul>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("notes")} name="notes" maxLength={500} error={state.fieldErrors?.notes} />
-            {canBackdate && <Field label={t("date")} name="date" type="date" max={today} defaultValue={today} error={state.fieldErrors?.date} />}
+            <Field label={t("notes")} name="notes" maxLength={500} defaultValue={state.values?.notes} error={state.fieldErrors?.notes} />
+            {canBackdate && (
+              <Field
+                label={t("date")}
+                name="date"
+                type="date"
+                max={today}
+                defaultValue={state.values?.date ?? today}
+                error={state.fieldErrors?.date}
+              />
+            )}
           </div>
           {state.fieldErrors?.entries && <p className="text-sm text-destructive">{state.fieldErrors.entries}</p>}
           <SubmitButton className="justify-self-start" disabled={payload.length === 0}>

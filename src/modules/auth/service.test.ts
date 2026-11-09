@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { makeUser, resetDb } from "../../../tests/db";
+import { PASSWORD_MAX_LENGTH } from "./constants";
 import { resetRateLimiter } from "./rate-limit";
-import { changeOwnPassword, login, userForSession } from "./service";
+import { changeOwnPassword, endSession, login, userForSession } from "./service";
 import { signSession, verifySession } from "./token";
 
 beforeEach(async () => {
@@ -39,6 +40,50 @@ describe("login", () => {
     await makeUser({ username: "ravi", password: "secret123" });
     for (let i = 0; i < 5; i++) await code(login(`guess${i}`, "bad", "9.9.9.9"));
     expect(await code(login("ravi", "secret123", "9.9.9.9"))).toBe("auth.locked");
+  });
+
+  it("parallel wrong-password attempts can't all slip past the lock", async () => {
+    // Each attempt is reserved against the lock before its DB lookup/compare,
+    // so only the first 5 of 8 parallel attempts get to try a password at all.
+    await makeUser({ username: "ravi", password: "secret123" });
+    const results = await Promise.all(Array.from({ length: 8 }, () => code(login("ravi", "bad", "ip"))));
+    expect(results.filter((r) => r === "auth.invalid")).toHaveLength(5);
+    expect(results.filter((r) => r === "auth.locked")).toHaveLength(3);
+  });
+
+  it("ignores a null ip (direct connection, not a trusted reverse proxy) rather than sharing one lock across everyone", async () => {
+    await makeUser({ username: "ravi", password: "secret123" });
+    await makeUser({ username: "anu", password: "secret123" });
+    for (let i = 0; i < 5; i++) await code(login("ravi", "bad", null));
+    expect(await code(login("ravi", "secret123", null))).toBe("auth.locked");
+    // A different username is unaffected: there is no shared per-IP key to exhaust.
+    expect(await code(login("anu", "secret123", null))).toBe("ok");
+  });
+});
+
+describe("login auditing", () => {
+  it("audits a successful login and a failed one, including an unknown username", async () => {
+    const u = await makeUser({ username: "ravi", password: "secret123" });
+    await login("ravi", "secret123", "ip");
+    expect(await db.auditLog.count({ where: { action: "LOGIN", entityId: String(u.id) } })).toBe(1);
+
+    expect(await code(login("ravi", "wrong", "ip2"))).toBe("auth.invalid");
+    expect(await db.auditLog.count({ where: { action: "LOGIN_FAILED", entityId: String(u.id) } })).toBe(1);
+
+    expect(await code(login("nobody", "whatever", "ip3"))).toBe("auth.invalid");
+    const unknown = await db.auditLog.findFirstOrThrow({ where: { action: "LOGIN_FAILED", entityId: null } });
+    expect(unknown.summary).toMatchObject({ username: "nobody" });
+  });
+});
+
+describe("endSession", () => {
+  it("bumps the session version so an existing token stops working, and is audited", async () => {
+    const u = await makeUser();
+    const claims = { uid: u.id, sv: 1 };
+    expect(await userForSession(claims)).not.toBeNull();
+    await endSession(u.id);
+    expect(await userForSession(claims)).toBeNull();
+    expect(await db.auditLog.count({ where: { action: "LOGOUT", entityId: String(u.id) } })).toBe(1);
   });
 });
 
@@ -77,5 +122,12 @@ describe("changeOwnPassword", () => {
 
     const audit = await db.auditLog.findMany({ where: { action: "PASSWORD_CHANGE" } });
     expect(audit).toHaveLength(1);
+  });
+
+  it("rejects a new password longer than bcrypt can use, and the old one still works", async () => {
+    const u = await makeUser({ username: "ravi", password: "first-pass" });
+    const tooLong = "x".repeat(PASSWORD_MAX_LENGTH + 1);
+    expect(await code(changeOwnPassword(u.id, "first-pass", tooLong))).toBe("auth.passwordTooLong");
+    await expect(login("ravi", "first-pass", "ip")).resolves.toBeTruthy();
   });
 });

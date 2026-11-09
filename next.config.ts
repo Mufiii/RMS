@@ -22,6 +22,22 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // A Content-Security-Policy is deliberately left out: Next's App Router can
+  // stream hydration data as an inline <script>, which a strict script-src
+  // would break; adding one needs the framework's nonce-based CSP wiring,
+  // verified end to end, not a guess here (docs/02-architecture.md §5).
+  async headers() {
+    const headers = [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "same-origin" },
+    ];
+    // HTTPS only (VPS option); the shop PC serves plain HTTP (docs/04-deployment.md).
+    if (process.env.COOKIE_SECURE === "true") {
+      headers.push({ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" });
+    }
+    return [{ source: "/:path*", headers }];
+  },
 };
 
 export default withNextIntl(nextConfig);

@@ -149,6 +149,7 @@
       "invalid": "Wrong username or password",
       "locked": "Too many failed attempts. Try again in 15 minutes.",
       "passwordTooShort": "Password must be at least {min} characters",
+      "passwordTooLong": "Password must be at most {max} characters",
       "currentPasswordWrong": "The current password is wrong",
       "passwordUnchanged": "The new password must be different from the current one"
     },
@@ -194,6 +195,7 @@
       "dateInvalid": "Enter a valid date",
       "futureDate": "The date can't be in the future",
       "backdateForbidden": "Only an admin can enter an earlier date",
+      "backdateTooOld": "That date is more than {years} years ago — check it's not a typo",
       "issueBeforeOpen": "Items can't be issued before the order's opening date ({date})",
       "customerInactive": "{name} is inactive — reactivate the customer first",
       "productInactive": "{product} is inactive",

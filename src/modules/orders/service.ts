@@ -1,6 +1,6 @@
 import type { Role } from "@/generated/prisma/enums";
 import { writeAudit } from "@/lib/audit";
-import { businessToday, fromDbDate, isIsoDate, toDbDate } from "@/lib/dates";
+import { addDays, businessToday, fromDbDate, isIsoDate, toDbDate } from "@/lib/dates";
 import { DomainError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
 import { nextDocumentNumber } from "@/lib/sequences";
@@ -10,6 +10,9 @@ import type { IssueLineInput } from "./schema";
 
 /** The user doing the work; the role decides whether backdating is allowed. */
 export type Actor = { id: number; role: Role };
+
+/** Catches a typo (e.g. 2006 for 2026) without blocking go-live entries from past months. */
+const MAX_BACKDATE_YEARS = 2;
 
 /**
  * Business date for an entry (docs/01-requirements.md §8):
@@ -21,6 +24,9 @@ export function resolveEntryDate(actor: Actor, requested: string | null | undefi
   if (!isIsoDate(requested)) throw new DomainError("orders.dateInvalid");
   if (requested > today) throw new DomainError("orders.futureDate");
   if (!can(actor.role, "date.backdate")) throw new DomainError("orders.backdateForbidden");
+  if (requested < addDays(today, -365 * MAX_BACKDATE_YEARS)) {
+    throw new DomainError("orders.backdateTooOld", { years: MAX_BACKDATE_YEARS });
+  }
   return { date: requested, isBackdated: true };
 }
 

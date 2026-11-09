@@ -69,7 +69,15 @@ export async function requireActionPermission(permission: Permission): Promise<A
   return user;
 }
 
-export async function clientIp(): Promise<string> {
+/**
+ * The caller's IP for login throttling, or null when it can't be trusted.
+ * `x-forwarded-for` is only read when `TRUST_PROXY_HEADERS=true` (the VPS
+ * option behind Caddy, which overwrites it) — on a direct connection (shop
+ * PC) a client can set that header itself, which would let it dodge the
+ * per-IP lock, so it is ignored there and only the per-username lock applies.
+ */
+export async function clientIp(): Promise<string | null> {
+  if (process.env.TRUST_PROXY_HEADERS !== "true") return null;
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || null;
 }

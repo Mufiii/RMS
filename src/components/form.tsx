@@ -75,10 +75,10 @@ export function SelectField({
   );
 }
 
-export function SubmitButton({ children, className, ...props }: ComponentProps<typeof Button>) {
+export function SubmitButton({ children, className, disabled, ...props }: ComponentProps<typeof Button>) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="lg" disabled={pending} className={cn("h-10", className)} {...props}>
+    <Button type="submit" size="lg" disabled={pending || disabled} className={cn("h-10", className)} {...props}>
       {pending ? "…" : children}
     </Button>
   );

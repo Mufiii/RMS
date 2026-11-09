@@ -24,6 +24,7 @@ export function IssueForm({
   const t = useTranslations("orders");
   const [state, action] = useActionState(issueItemsAction, initialFormState);
   const err = state.fieldErrors ?? {};
+  const v = state.values ?? {};
   return (
     <Card>
       <CardHeader>
@@ -35,7 +36,7 @@ export function IssueForm({
           <input type="hidden" name="orderId" value={orderId} />
           <FormMessage message={state.message} ok={state.ok} />
           <ItemsEditor products={products} error={err.lines} />
-          <Field label={t("issueNotes")} name="notes" maxLength={500} error={err.notes} />
+          <Field label={t("issueNotes")} name="notes" maxLength={500} defaultValue={v.notes} error={err.notes} />
           {canBackdate && (
             <Field
               label={t("date")}
@@ -43,7 +44,7 @@ export function IssueForm({
               type="date"
               min={minDate}
               max={today}
-              defaultValue={today}
+              defaultValue={v.date ?? today}
               error={err.date}
               hint={t("dateHint")}
               className="max-w-xs"
