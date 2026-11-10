@@ -81,7 +81,7 @@ describe("createInvoice", () => {
       ["Prop", null, 1, 5, "LOST", "40.00", "900.00"], // lost pieces are charged rent up to the day reported
     ]);
     expect([full.rentTotal, full.damageTotal, full.discountAmount, full.total].map((d) => d.toFixed(2))).toEqual(["12336.00", "3400.00", "0.00", "15736.00"]);
-    expect([full.customerName, full.customerPhone, full.customerAddress, full.siteAddress, full.orderNo]).toEqual(["Ravi", "9847012345", "Thrissur", "Site A", `ORD/${fiscalYear("2026-11-01")}/0001`]);
+    expect([full.customerName, full.customerPhone, full.customerAddress, full.siteAddress, full.orderNo]).toEqual(["Ravi", "9847012345", "Thrissur", "Site A", "ORD-0001"]);
     expect(await orderStatus()).toBe("CLOSED");
     expect(await actions()).toContain("INVOICE_CREATE");
   });

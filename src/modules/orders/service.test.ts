@@ -60,7 +60,7 @@ describe("createOrder + issue", () => {
       { productId: props.id, quantity: 4 },
       { productId: gen.id, unitIds: [genUnits[0].id] },
     ]);
-    expect(o.orderNo).toMatch(/^ORD\/\d{4}-\d{2}\/0001$/);
+    expect(o.orderNo).toBe("ORD-0001");
     const lines = await db.issueLine.findMany({ where: { orderId: o.id }, orderBy: { id: "asc" } });
     expect(lines.map((l) => [l.productId, l.unitId, l.quantity, l.dailyRate.toFixed(2)])).toEqual([
       [props.id, null, 4, "8.00"],
@@ -94,7 +94,7 @@ describe("createOrder + issue", () => {
     expect(await code(order(staff, [{ productId: props.id, quantity: 11 }]))).toBe("orders.notEnoughStock");
     expect(await db.rentalOrder.count()).toBe(0); // the whole transaction rolled back, including the order number
     const o = await order(staff, [{ productId: props.id, quantity: 1 }]);
-    expect(o.orderNo).toMatch(/\/0001$/);
+    expect(o.orderNo).toBe("ORD-0001");
   });
 
   it("refuses units that are not available, and wrong input shapes", async () => {
@@ -213,10 +213,25 @@ describe("order search", () => {
     const o2 = await order(staff, []);
     const find = async (q: string) =>
       (await db.rentalOrder.findMany({ where: buildOrderWhere(q, "ALL"), orderBy: { id: "asc" } })).map((o) => o.id);
-    expect(await find("2")).toEqual([o2.id]); // not every order (they all contain "2026")
+    expect(await find("2")).toEqual([o2.id]);
     expect(await find("0001")).toEqual([o1.id]);
+    expect(await find("ORD-2")).toEqual([o2.id]);
     expect(await find(o2.orderNo)).toEqual([o2.id]);
     expect(await find("ravi")).toEqual([o1.id, o2.id]);
     expect(await find("98470 12345")).toEqual([o1.id, o2.id]);
+  });
+
+  it("still finds an order numbered in the old ORD/2026-27/0007 style", async () => {
+    const { buildOrderWhere } = await import("./queries");
+    const o1 = await order(staff, []);
+    const old = await db.rentalOrder.create({
+      data: { orderNo: "ORD/2026-27/0007", customerId: o1.customerId, openedOn: o1.openedOn, createdById: o1.createdById },
+    });
+    const find = async (q: string) =>
+      (await db.rentalOrder.findMany({ where: buildOrderWhere(q, "ALL"), orderBy: { id: "asc" } })).map((o) => o.id);
+    expect(await find("7")).toEqual([old.id]);
+    expect(await find("ORD-7")).toEqual([old.id]);
+    expect(await find("ORD/2026-27/0007")).toEqual([old.id]);
+    expect(await find("1")).toEqual([o1.id]);
   });
 });

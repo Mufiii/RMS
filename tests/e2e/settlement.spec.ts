@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // Runs after returns.spec (alphabetical, one worker) and uses its orders:
-//   ORD/…/0001: 16 Steel props (₹10/day) and Generator G5-001 (₹1,500/day) still out, all issued today;
+//   ORD-0001: 16 Steel props (₹10/day) and Generator G5-001 (₹1,500/day) still out, all issued today;
 //               4 props came back good today.
-//   ORD/…/0002: everything back — 10 props for 3 days = ₹300.00.
+//   ORD-0002: everything back — 10 props for 3 days = ₹300.00.
 test.describe.configure({ mode: "serial" });
 
 async function login(page: Page, username: string, password: string, home: RegExp) {
@@ -22,7 +22,7 @@ const totals = (page: Page) => page.getByTestId("invoice-totals");
 
 async function openOrder(page: Page, no: string) {
   await page.goto(`/orders?status=all&q=${no}`);
-  await main(page).getByRole("link", { name: new RegExp(`/${no.padStart(4, "0")}`) }).click();
+  await main(page).getByRole("link", { name: new RegExp(`ORD-${no.padStart(4, "0")}$`) }).click();
 }
 
 test("the running statement shows rent so far, with rent on items still out counted to today", async ({ page }) => {
@@ -51,7 +51,7 @@ test("staff generate the final invoice (no discount for staff); the order closes
   await expect(totals(page)).toContainText("Total₹300.00");
   await expect(page.getByText("Cancel invoice", { exact: true })).toHaveCount(0); // admin only
 
-  await page.getByRole("link", { name: /ORD\/.*\/0002/ }).click();
+  await page.getByRole("link", { name: /ORD-0002$/ }).click();
   await expect(page.getByTestId("closed-notice")).toContainText("Closed with final invoice INV/");
   await expect(page.getByTestId("closed-notice")).toContainText("₹300.00");
   await expect(page.getByRole("button", { name: "Record return" })).toHaveCount(0);
@@ -76,7 +76,7 @@ test("admin cancels and reissues with a discount: new number, old one kept as ca
   await expect(totals(page)).toContainText("“Regular customer”");
   await expect(totals(page)).toContainText("Total₹250.00");
 
-  await page.getByRole("link", { name: /ORD\/.*\/0002/ }).click();
+  await page.getByRole("link", { name: /ORD-0002$/ }).click();
   const list = page.getByTestId("order-invoices");
   await expect(list.locator("li")).toHaveCount(2);
   await expect(list.locator("li").filter({ hasText: "/0001" })).toContainText("Cancelled — “Agreed discount”");

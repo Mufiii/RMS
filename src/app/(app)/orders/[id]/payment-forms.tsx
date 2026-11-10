@@ -41,7 +41,7 @@ export function PaymentForm({ orderId, isAdvance, due }: { orderId: number; isAd
   const t = useTranslations("payments");
   const [state, action] = useActionState(recordPaymentAction, initialFormState);
   return (
-    <Card>
+    <Card id="payment" className="scroll-mt-20">
       <CardHeader>
         <CardTitle>{isAdvance ? t("recordAdvance") : t("recordPayment")}</CardTitle>
         <CardDescription>{isAdvance ? t("advanceHint") : t("dueHint", { due: due ?? "" })}</CardDescription>

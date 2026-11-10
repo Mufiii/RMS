@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
-import { businessToday, fiscalYear } from "@/lib/dates";
 import { makeUser, resetDb } from "../../../tests/db";
 import { createCustomer } from "@/modules/customers/service";
 import { customerSchema } from "@/modules/customers/schema";
@@ -9,7 +8,6 @@ import { settingsSchema, sniffImage } from "./schema";
 import { removeLogo, setLogo, updateSettings } from "./service";
 
 let admin: Actor;
-const FY = fiscalYear(businessToday());
 const code = (p: Promise<unknown>) => p.then(() => "ok", (e: { code?: string }) => e.code ?? String(e));
 const base = {
   businessName: "Sree Krishna Motors",
@@ -77,7 +75,7 @@ describe("updateSettings", () => {
     const first = await mk();
     await updateSettings(admin, parse({ orderPrefix: "SKM" }));
     const second = await mk();
-    expect([first.orderNo, second.orderNo]).toEqual([`ORD/${FY}/0001`, `SKM/${FY}/0002`]);
+    expect([first.orderNo, second.orderNo]).toEqual(["ORD-0001", "SKM-0002"]);
   });
 
   it("the database refuses bad prefixes and clashes even without the form", async () => {

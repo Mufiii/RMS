@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // Runs after rentals.spec (alphabetical, one worker) and uses its orders:
-//   ORD/…/0001 (Ravi Kumar): Steel prop × 20 and Generator G5-001, issued today
-//   ORD/…/0002 (Ravi's brother): Steel prop × 10, issued 3 days ago (backdated), ₹10/day
+//   ORD-0001 (Ravi Kumar): Steel prop × 20 and Generator G5-001, issued today
+//   ORD-0002 (Ravi's brother): Steel prop × 10, issued 3 days ago (backdated), ₹10/day
 test.describe.configure({ mode: "serial" });
 
 async function login(page: Page, username: string, password: string, home: RegExp) {
@@ -29,7 +29,7 @@ function daysAgo(n: number) {
 
 async function openOrder(page: Page, no: string) {
   await page.goto(`/orders?status=all&q=${no}`);
-  await main(page).getByRole("link", { name: new RegExp(`/${no.padStart(4, "0")}`) }).click();
+  await main(page).getByRole("link", { name: new RegExp(`ORD-${no.padStart(4, "0")}$`) }).click();
 }
 
 test("staff record a mixed return: good, damaged (charged) and lost (charged), plus a damaged generator", async ({ page }) => {

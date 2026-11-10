@@ -125,7 +125,7 @@ Reconciliation: `qty_owned = Σ delta_owned`, `qty_repair = Σ delta_repair`, `q
 | Column | Type | Constraints |
 |---|---|---|
 | id | int PK | |
-| order_no | text | UNIQUE (e.g. `ORD/2026-27/0001`) |
+| order_no | text | UNIQUE (e.g. `ORD-0001`; older rows may look like `ORD/2026-27/0001`) |
 | customer_id → customers | | NOT NULL, indexed |
 | status | enum `OPEN`,`CLOSED`,`CANCELLED` | indexed |
 | site_address | text | null (where the equipment is being used; optional) |
@@ -217,7 +217,7 @@ Partial unique index: `UNIQUE (order_id) WHERE status = 'ISSUED'`, so an order h
 (Before the invoice exists, the statement uses accrued rent in place of `invoice.total`.)
 
 ### number_sequences
-`doc_type` (`ORDER`,`INVOICE`,`RECEIPT`,`REFUND`), `fiscal_year` (e.g. `2026-27`), `next_value int`. PK `(doc_type, fiscal_year)`. Incremented with `UPDATE … RETURNING` inside the business transaction, which keeps numbering gap-free.
+`doc_type` (`ORDER`,`INVOICE`,`RECEIPT`,`REFUND`), `fiscal_year` (e.g. `2026-27`; the single `ORDER` counter uses the fixed key `ALL`, enforced by a CHECK), `next_value int`. PK `(doc_type, fiscal_year)`. Incremented with an upsert (`INSERT … ON CONFLICT DO UPDATE … RETURNING`) inside the business transaction, which keeps numbering gap-free.
 
 ### settings (single row)
 `id` with `CHECK (id = 1)`, `business_name`, `business_name_ml`, `address`, `address_ml`, `phones`, `email`, `order_prefix`, `invoice_prefix`, `receipt_prefix`, `refund_prefix`, `invoice_terms`, `invoice_terms_ml`, `logo_data` (bytea, ≤ 300 KB) + `logo_mime` (`image/png` or `image/jpeg`) + `logo_updated_at` (kept in the database so backups cover it), `print_paper_width_mm` (int, default 80, `CHECK (print_paper_width_mm IN (58, 80))`; A4 may be added later), `long_rental_days` (int, default 30, 1–365), `updated_by`, `updated_at`. CHECKs: prefixes `^[A-Z0-9-]{1,10}$` and all four distinct (receipts and refunds share one number column); business name not blank.

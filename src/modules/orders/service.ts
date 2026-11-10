@@ -3,7 +3,7 @@ import { writeAudit } from "@/lib/audit";
 import { addDays, businessToday, fromDbDate, isIsoDate, toDbDate } from "@/lib/dates";
 import { DomainError } from "@/lib/errors";
 import { can } from "@/lib/permissions";
-import { nextDocumentNumber } from "@/lib/sequences";
+import { nextOrderNumber } from "@/lib/sequences";
 import { type Tx, withTx } from "@/lib/tx";
 import { available, countersOf } from "@/modules/inventory/client-safe";
 import type { IssueLineInput } from "./schema";
@@ -163,7 +163,7 @@ export async function createOrder(
 
     const when = resolveEntryDate(actor, input.date);
     const settings = await tx.settings.findUnique({ where: { id: 1 }, select: { orderPrefix: true } });
-    const orderNo = await nextDocumentNumber(tx, "ORDER", when.date, settings?.orderPrefix ?? "ORD");
+    const orderNo = await nextOrderNumber(tx, settings?.orderPrefix ?? "ORD");
     const order = await tx.rentalOrder.create({
       data: {
         orderNo,

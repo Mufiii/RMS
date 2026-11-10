@@ -7,7 +7,7 @@ Status: **built 2026-11-07** on branch `feature/step-9-settings`, awaiting demo 
 | Section | Fields | Where it shows |
 |---|---|---|
 | **Business** | Name (English, required) and Malayalam; address in both; phone numbers (as they should print); email | Top of every print slip, Malayalam first |
-| **Document numbers** | Prefixes for orders, invoices, receipts, refunds, each with a live example (`INV/2026-27/0001`) | New numbers only. Existing ones keep theirs; the count carries on without a gap and restarts each financial year |
+| **Document numbers** | Prefixes for orders, invoices, receipts, refunds, each with a live example (`ORD-0001`, `INV/2026-27/0001`) | New numbers only. Existing ones keep theirs; the count carries on without a gap. Invoice, receipt and refund numbers restart each financial year; order numbers never do |
 | **Printing** | Paper width **80 mm** (standard) or **58 mm**; invoice terms in English and Malayalam | Slip width (screen, print and PDF); terms at the bottom of slips |
 | **Dashboard** | Long rental after N days (1–365, default 30) | Dashboard "Long rentals" |
 | **Logo** | PNG or JPEG, ≤ 300 KB; upload, replace, remove | Top of slips, in black and white for thermal paper |

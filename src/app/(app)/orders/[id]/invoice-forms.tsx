@@ -30,7 +30,7 @@ export function GenerateInvoiceForm({ orderId, total, canDiscount }: { orderId: 
   const [state, action] = useActionState(createInvoiceAction, initialFormState);
   const err = state.fieldErrors ?? {};
   return (
-    <Card className="border-emerald-500/40 lg:col-span-2">
+    <Card id="invoice" className="scroll-mt-20 border-emerald-500/40 lg:col-span-2">
       <CardHeader>
         <CardTitle>{t("generateTitle")}</CardTitle>
         <CardDescription>{t("generateHint")}</CardDescription>

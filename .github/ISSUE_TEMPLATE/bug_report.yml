@@ -14,7 +14,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Open order ORD/2026-27/0012
+        1. Open order ORD-0012
         2. Record a return of 5 props
         3. ...
     validations:

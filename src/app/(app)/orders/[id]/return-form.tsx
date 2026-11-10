@@ -98,7 +98,7 @@ export function ReturnForm({
     }));
 
   return (
-    <Card className="lg:col-span-2">
+    <Card id="return" className="scroll-mt-20 lg:col-span-2">
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
         <CardDescription>{t("hint")}</CardDescription>

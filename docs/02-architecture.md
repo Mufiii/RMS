@@ -138,7 +138,7 @@ Isolation level: READ COMMITTED (the PostgreSQL default) is enough, because of t
 | **Void / cancel** (admin) | Lock the target + order → require a reason → set status VOIDED/CANCELLED (never delete) → reverse the stock effects where relevant → audit |
 | **Stock adjustment** (admin) | Lock the product → insert StockMovement → update counters (CHECK enforced) → audit |
 
-Document numbers use a `number_sequence` row per (document type, financial year), updated with `UPDATE … RETURNING` inside the same transaction. A rollback also rolls back the number, so there are never gaps.
+Invoice, receipt and refund numbers use a `number_sequences` row per (document type, financial year); order numbers use one all-time row (`ORDER`, `ALL`) so `ORD-0001` is never repeated. Each is upserted with `RETURNING` inside the same transaction. A rollback also rolls back the number, so there are never gaps.
 
 **Why stock counters rather than computing availability every time:** counters on `product` (`qty_owned`, `qty_out`, `qty_repair`) are updated only inside these transactions and protected by `CHECK (qty_out + qty_repair <= qty_owned)`. That gives a hard database guarantee and fast queries. The full history stays in the issue, return and stock-movement tables, and a reconciliation test (and a hidden admin check) recomputes the counters from that history to prove they agree.
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Field, FormMessage, SubmitButton } from "@/components/form";
 import { Label } from "@/components/ui/label";
 import { initialFormState } from "@/lib/form-state";
+import { formatOrderNo } from "@/lib/order-number";
 import { removeLogoAction, updateSettingsAction, uploadLogoAction } from "@/modules/settings/actions";
 
 export type SettingsValues = {
@@ -56,7 +57,10 @@ export function SettingsForm({ initial, fiscalYear }: { initial: SettingsValues;
     receiptPrefix: v("receiptPrefix"),
     refundPrefix: v("refundPrefix"),
   });
-  const example = (p: string) => `${(p || "…").toUpperCase()}/${fiscalYear}/0001`;
+  const example = (k: keyof typeof prefixes) =>
+    k === "orderPrefix"
+      ? formatOrderNo(prefixes[k].toUpperCase(), 1)
+      : `${(prefixes[k] || "…").toUpperCase()}/${fiscalYear}/0001`;
 
   return (
     <form action={action} className="grid gap-4">
@@ -95,7 +99,7 @@ export function SettingsForm({ initial, fiscalYear }: { initial: SettingsValues;
               value={prefixes[k]}
               onChange={(e) => setPrefixes((p) => ({ ...p, [k]: e.target.value.toUpperCase() }))}
               error={err[k]}
-              hint={<span className="font-mono">{example(prefixes[k])}</span>}
+              hint={<span className="font-mono">{example(k)}</span>}
             />
           ))}
         </CardContent>

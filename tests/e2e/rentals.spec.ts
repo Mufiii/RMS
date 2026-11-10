@@ -48,7 +48,7 @@ test("staff open an order for a customer and issue props and a generator", async
   await page.getByRole("button", { name: "Create order" }).click();
 
   await ok(page, "Order created");
-  await expect(page.getByRole("heading", { name: /^ORD\/\d{4}-\d{2}\/0001$/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ORD-0001" })).toBeVisible();
   orderUrl = page.url().replace(/\?.*$/, "");
   await expect(itemsOut(page).locator("li")).toHaveCount(2);
   await expect(itemsOut(page)).toContainText("Steel prop 3 m");
@@ -82,7 +82,7 @@ test("stock, customer page and the customer guard reflect the rental", async ({ 
   await page.goto("/products");
   await expect(main(page).getByRole("link", { name: /Steel prop 3 m/ })).toContainText("60"); // 85 − 25
   await page.goto("/customers/1");
-  await expect(page.getByTestId("customer-orders")).toContainText("ORD/");
+  await expect(page.getByTestId("customer-orders")).toContainText("ORD-");
   await expect(page.getByTestId("customer-orders")).toContainText("26 pieces out");
   await expect(page.getByTestId("customer-items-out")).toContainText("G5-001");
   await page.getByRole("button", { name: "Deactivate customer" }).click();
@@ -117,7 +117,7 @@ test("admin enters a past rental (backdated) and it is marked and audited", asyn
   await page.getByLabel("Notes").fill("Paper register no. 457");
   await page.getByRole("button", { name: "Create order" }).click();
   await ok(page, "Order created");
-  await expect(page.getByRole("heading", { name: /\/0002$/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ORD-0002" })).toBeVisible();
   await expect(main(page).getByText(`Opened ${ddmmyyyy(past)}`)).toBeVisible();
   await expect(main(page).getByText("backdated", { exact: true })).toBeVisible();
   await expect(main(page).getByText("BACKDATE", { exact: true })).toBeVisible();
@@ -142,13 +142,16 @@ test("an order entered by mistake can be cancelled and shows under Cancelled", a
   await expect(main(page).getByText("Cancelled by Shop Manager")).toBeVisible();
 
   await page.goto("/orders");
-  await expect(main(page).locator("ul li")).toHaveCount(2); // the two open ones
+  await expect(main(page).locator("table tbody tr")).toHaveCount(2); // the two open ones
+  await expect(main(page).locator("table thead")).toContainText("Balance");
+  await expect(main(page).locator("table tbody tr").first()).toContainText("so far"); // open: rent so far, not an invoice total
+  await expect(main(page).locator("table tbody tr").first().getByText("Out", { exact: true })).toBeVisible(); // the stage pill
   await main(page).getByRole("link", { name: "Cancelled" }).click();
-  await expect(main(page).locator("ul li")).toHaveCount(1);
+  await expect(main(page).locator("table tbody tr")).toHaveCount(1);
   await page.goto("/orders?q=457");
-  await expect(main(page).locator("ul li")).toHaveCount(0); // notes aren't searched…
+  await expect(main(page).locator("table tbody tr")).toHaveCount(0); // notes aren't searched…
   await page.goto("/orders?q=2");
-  await expect(main(page).locator("ul li")).toHaveCount(1); // …but the order number's last digits are
+  await expect(main(page).locator("table tbody tr")).toHaveCount(1); // …but the order number's last digits are
 });
 
 test("stock check still agrees after issues and voids", async ({ page }) => {

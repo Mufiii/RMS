@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // Runs after settlement.spec (alphabetical, one worker) and uses its orders:
-//   ORD/…/0001 (Ravi Kumar): open, ₹1,700.00 so far, nothing paid.
-//   ORD/…/0002: closed with live invoice INV/…/0003, total ₹300.00, nothing paid.
+//   ORD-0001 (Ravi Kumar): open, ₹1,700.00 so far, nothing paid.
+//   ORD-0002: closed with live invoice INV/…/0003, total ₹300.00, nothing paid.
 test.describe.configure({ mode: "serial" });
 
 async function login(page: Page, username: string, password: string, home: RegExp) {
@@ -21,7 +21,7 @@ const summary = (page: Page) => page.getByTestId("money-summary");
 
 async function openOrder(page: Page, no: string) {
   await page.goto(`/orders?status=all&q=${no}`);
-  await main(page).getByRole("link", { name: new RegExp(`/${no.padStart(4, "0")}`) }).click();
+  await main(page).getByRole("link", { name: new RegExp(`ORD-${no.padStart(4, "0")}$`) }).click();
   await expect(page).toHaveURL(/\/orders\/\d+$/);
 }
 
@@ -89,7 +89,7 @@ test("admin voids a payment, reissues with a discount, and the excess is refunde
   await page.getByRole("button", { name: "Cancel and reissue" }).click();
   await expect(page.getByTestId("invoice-money")).toContainText("Excess paid₹100.00");
 
-  await page.getByRole("link", { name: /ORD\/.*\/0002/ }).click();
+  await page.getByRole("link", { name: /ORD-0002$/ }).click();
   await expect(page.getByText("The customer paid ₹100.00 more than the invoice")).toBeVisible();
   const refund = page.locator("form").filter({ has: page.getByRole("button", { name: "Record refund" }) });
   await refund.getByLabel("Amount (₹)").fill("150");

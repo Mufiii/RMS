@@ -6,7 +6,7 @@ Status: **built 2026-11-06**, awaiting demo sign-off.
 
 | Path | Who | What |
 |---|---|---|
-| `/orders` | admin, staff | Orders with Open / Closed / Cancelled / All filter. Search by order number (a short number such as `12` matches `…/0012`), customer name or phone. Open orders show how many pieces are out |
+| `/orders` | admin, staff | Orders with Open / Closed / Cancelled / All filter. Search by order number (a short number such as `12` or `ORD-12` matches `ORD-0012`, and also an older `…/0012`), customer name or phone. See **Orders list** below |
 | `/orders/new` | admin, staff | Step 1: pick an active customer (search, or "New customer" with the phone pre-filled). Step 2: items, site address, notes and, for admins only, a date. Creates the order and issues the items in one go |
 | `/orders/[id]` | admin, staff | Items out (product, serial, quantity out/returned, issue date, rate snapshot); **Add items** (new issue on the same order); issue history incl. voided lines with who and why; activity log |
 | | admin only | **Void a line** (with reason), **Cancel order** (with reason), **date field** (backdating) |
@@ -14,9 +14,25 @@ Status: **built 2026-11-06**, awaiting demo sign-off.
 
 **Items editor:** choose a product (grouped by category, showing availability). Then either type a quantity (max = available) or tick the available serial units. Add more lines as needed. Each product can be picked once per issue.
 
+## Orders list
+
+Compact on purpose: one row answers "where is it, what is owed, what next?". Everything per product line stays on `/orders/[id]`.
+
+| Column | Shows |
+|---|---|
+| **Order** | Order number (link). On phones the date, items and amount sit under it |
+| **Customer** | Name and phone |
+| **Date** | Date the order was opened |
+| **Items** | `still out / total issued`, or "All back". One column covers many products and partial returns |
+| **Days out** | Age of the oldest piece still out (issue day = day 1); red at the Settings long-rental threshold. Rentals have no due date, so age is the signal |
+| **Amount** | Invoice total once billed; otherwise rent so far (marked "so far"). Blank for cancelled orders |
+| **Balance** | Amount − received + refunded: "₹X due", "Paid" or "₹X excess". The same `balancesFor` the order page, customer page and dashboard use |
+| **Status** | Derived stage: Out · Part returned · Ready to bill · Unpaid · Paid · Refund due · Cancelled (`orderStage`). The filter tabs still use the stored Open / Closed / Cancelled |
+| **⋮** | View details · Record return · Generate invoice · Take payment (jump to that card) · Print statement / invoice · Call · Cancel (admin, open orders) |
+
 ## Rules
 
-- Order number `ORD/<FY>/NNNN`, gap-free per financial year of the opening date. The prefix comes from Settings.
+- Order number `ORD-NNNN`, gap-free and counted for all time (it never restarts: a yearly restart would repeat `ORD-0001` and hit the unique index). The prefix comes from Settings. Orders created before this change keep their `ORD/<FY>/NNNN` numbers; the counter continues after the highest of them.
 - **Issue** (one transaction): lock the order (must be OPEN) → lock the products in id order → check each is active and `available ≥ qty` → lock the units in id order, each must be AVAILABLE → insert the issue and its lines with the **daily rate copied from the product** → `qty_out += n`, units → RENTED → audit.
 - The rate is snapshotted per line. A later product rate change never touches items already out.
 - Over-issuing is impossible: there is a server check under row locks, and the DB CHECK `qty_out + qty_repair ≤ qty_owned` backs it up. **One unit can't be on two active lines** (partial unique index). Tested with 4 simultaneous attempts on the last generator: exactly one succeeds.
