@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { formatDateTime } from "@/lib/dates";
 import { formatINR, toPaise } from "@/lib/money";
 import { can } from "@/lib/permissions";
@@ -48,11 +49,8 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
-      <Link href="/products" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {t("products.title")}
-      </Link>
       <PageHeader
+        back={{ href: "/products", label: t("products.title") }}
         title={ml && p.nameMl ? p.nameMl : p.name}
         actions={
           canEdit && (
@@ -73,12 +71,10 @@ export default async function ProductPage({ params, searchParams }: PageProps<"/
       </PageHeader>
 
       {(saved === "created" || saved === "updated") && (
-        <p role="status" className="mb-4 max-w-3xl rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          {saved === "created" ? t("products.created") : t("products.updated")}
-        </p>
+        <Notice tone="success">{saved === "created" ? t("products.created") : t("products.updated")}</Notice>
       )}
 
-      <div className="mb-4 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {tiles.map((tile) => (
           <div key={tile.label} className="rounded-xl border p-3">
             <div className="text-xs text-muted-foreground">{tile.label}</div>

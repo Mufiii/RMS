@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Plus, Search } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ClipboardList, Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { FilterTabs } from "@/components/filter-tabs";
+import { ListPagination, ListToolbar, SearchForm } from "@/components/list-controls";
 import { PageHeader } from "@/components/page-header";
+import { SlipNo } from "@/components/slip-no";
 import { formatDate, fromDbDate } from "@/lib/dates";
 import { formatINR } from "@/lib/money";
 import { can } from "@/lib/permissions";
@@ -56,47 +60,32 @@ export default async function OrdersPage({ searchParams }: PageProps<"/orders">)
         }
       />
 
-      <form role="search" action="/orders" className="mb-3 flex gap-2">
-        {status !== "OPEN" && <input type="hidden" name="status" value={status.toLowerCase()} />}
-        <Input
-          name="q"
-          type="search"
-          defaultValue={q}
-          placeholder={t("searchPlaceholder")}
-          aria-label={t("search")}
-          className="h-10 max-w-md"
-          autoComplete="off"
-        />
-        <Button type="submit" variant="outline" size="lg" className="h-10">
-          <Search />
-          <span className="sr-only sm:not-sr-only">{t("search")}</span>
-        </Button>
-      </form>
+      <Card className="gap-0 py-0">
+        <ListToolbar>
+          <SearchForm
+            action="/orders"
+            defaultValue={q}
+            placeholder={t("searchPlaceholder")}
+            label={t("search")}
+            hidden={{ status: status !== "OPEN" ? status.toLowerCase() : undefined }}
+          />
+          <FilterTabs
+            label={t("status")}
+            tabs={FILTERS.map((s) => ({
+              key: s,
+              label: s === "ALL" ? t("filterAll") : t(`statusName.${s}`),
+              href: href({ status: s }),
+              active: status === s,
+            }))}
+          />
+        </ListToolbar>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-        {FILTERS.map((s) => (
-          <Link
-            key={s}
-            href={href({ status: s })}
-            aria-current={status === s ? "page" : undefined}
-            className={cn(
-              "rounded-full border px-3 py-1",
-              status === s ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {s === "ALL" ? t("filterAll") : t(`statusName.${s}`)}
-          </Link>
-        ))}
-        <span className="ml-auto text-muted-foreground">{t("results", { count: total })}</span>
-      </div>
-
-      {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">{q ? t("noMatch") : t("empty")}</div>
-      ) : (
-        <div className=" border">
-          <Table>
+        {rows.length === 0 ? (
+          <EmptyState icon={ClipboardList} title={q ? t("noMatch") : t("empty")} />
+        ) : (
+          <Table data-testid="order-table">
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead>{t("orderNo")}</TableHead>
                 <TableHead>{t("customer")}</TableHead>
                 <TableHead className="hidden sm:table-cell">{t("orderDate")}</TableHead>
@@ -123,18 +112,18 @@ export default async function OrdersPage({ searchParams }: PageProps<"/orders">)
                 ];
                 return (
                   <OrderRow key={o.id} href={`/orders/${o.id}`} orderId={o.id} orderNo={o.orderNo} canCancel={canCancel && open} shortcuts={shortcuts}>
-                    <TableCell className="font-medium tabular-nums">
-                      <Link href={`/orders/${o.id}`} className="underline-offset-4 hover:underline">
-                        {o.orderNo}
+                    <TableCell>
+                      <Link href={`/orders/${o.id}`} className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                        <SlipNo muted={o.status === "CANCELLED"}>{o.orderNo}</SlipNo>
                       </Link>
-                      <div className="text-xs font-normal text-muted-foreground sm:hidden">
+                      <div className="mt-1 text-xs font-normal text-muted-foreground sm:hidden">
                         {formatDate(fromDbDate(o.openedOn))} · {items}
                         {o.amount !== null && <> · {formatINR(o.amount)}</>}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="truncate">{o.customer.name}</div>
-                      <div className="text-xs text-muted-foreground">{formatPhone(o.customer.phone)}</div>
+                    <TableCell className="max-w-64">
+                      <div className="truncate font-medium">{o.customer.name}</div>
+                      <div className="text-[13px] text-muted-foreground">{formatPhone(o.customer.phone)}</div>
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground tabular-nums sm:table-cell">{formatDate(fromDbDate(o.openedOn))}</TableCell>
                     <TableCell className="hidden text-right tabular-nums sm:table-cell">{items}</TableCell>
@@ -170,28 +159,18 @@ export default async function OrdersPage({ searchParams }: PageProps<"/orders">)
               })}
             </TableBody>
           </Table>
-        </div>
-      )}
+        )}
 
-      {pages > 1 && (
-        <nav className="mt-4 flex items-center justify-between text-sm" aria-label="pagination">
-          {page > 1 ? (
-            <Link href={href({ page: page - 1 })} className={buttonVariants({ variant: "outline" })}>
-              {t("prev")}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span className="text-muted-foreground">{t("page", { page, pages })}</span>
-          {page < pages ? (
-            <Link href={href({ page: page + 1 })} className={buttonVariants({ variant: "outline" })}>
-              {t("next")}
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
+        {rows.length > 0 && (
+          <ListPagination
+            summary={t("results", { count: total })}
+            prevHref={page > 1 ? href({ page: page - 1 }) : null}
+            nextHref={page < pages ? href({ page: page + 1 }) : null}
+            pageLabel={pages > 1 ? t("page", { page, pages }) : undefined}
+            labels={{ prev: t("prev"), next: t("next") }}
+          />
+        )}
+      </Card>
     </>
   );
 }

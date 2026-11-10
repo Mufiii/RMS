@@ -37,7 +37,7 @@ test("admin edits business details and the long-rental threshold; the dashboard 
   await ok(page, "Settings saved");
 
   await page.goto("/dashboard");
-  await expect(page.getByText("Long rentals: 40+ days out")).toBeVisible();
+  await expect(page.getByText("Out 40+ days and not yet returned")).toBeVisible();
   await expect(page.getByText("Nothing has been out 40 days or more.")).toBeVisible(); // the 35-day rental is no longer flagged
 });
 

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ClipboardCheck, Plus, Tags } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Boxes, ClipboardCheck, Plus, Tags } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
+import { Pill } from "@/components/stat-tile";
 import { formatINR, toPaise } from "@/lib/money";
 import { can } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
         }
       />
 
+      <Card className="gap-0 py-0">
       <ProductFilters
         q={q}
         categoryId={categoryId}
@@ -65,8 +67,11 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
       />
 
       {products.length === 0 ? (
-        <div className="grid justify-items-center gap-3 rounded-xl border border-dashed p-10 text-center text-muted-foreground" data-testid="no-products">
-          <p>
+        <div className="grid justify-items-center gap-3 px-6 py-14 text-center" data-testid="no-products">
+          <span className="grid size-14 place-items-center rounded-2xl bg-accent text-primary">
+            <Boxes className="size-7" />
+          </span>
+          <p className="text-base font-semibold text-balance">
             {!q && !categoryId && !includeInactive
               ? t("empty")
               : q && category
@@ -97,9 +102,9 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border">
+        <div>
           {/* Header row (desktop) */}
-          <div className="hidden grid-cols-[1fr_8rem_repeat(4,5rem)] gap-2 border-b bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[1fr_8rem_repeat(4,5rem)] gap-2 border-b bg-muted/60 px-5 py-2.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase md:grid">
             <span>{t("name")}</span>
             <span className="text-right">{t("dailyRate")}</span>
             <span className="text-right">{t("owned")}</span>
@@ -115,13 +120,13 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
                 <li key={p.id} className={cn(!p.isActive && "opacity-60")}>
                   <Link
                     href={`/products/${p.id}`}
-                    className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 px-4 py-3 hover:bg-muted/40 md:grid-cols-[1fr_8rem_repeat(4,5rem)] md:items-center"
+                    className="group grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 px-5 py-3.5 transition-colors hover:bg-accent/40 md:grid-cols-[1fr_8rem_repeat(4,5rem)] md:items-center"
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium">{ml && p.nameMl ? p.nameMl : p.name}</span>
+                        <span className="font-medium group-hover:text-primary">{ml && p.nameMl ? p.nameMl : p.name}</span>
                         {p.code && <span className="text-xs text-muted-foreground">{p.code}</span>}
-                        {!p.isActive && <Badge variant="destructive">{t("inactiveBadge")}</Badge>}
+                        {!p.isActive && <Pill tone="muted">{t("inactiveBadge")}</Pill>}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {ml && p.category.nameMl ? p.category.nameMl : p.category.name} · {t(`trackingShort.${p.tracking}`)}
@@ -148,6 +153,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/product
           </ul>
         </div>
       )}
+      </Card>
     </>
   );
 }

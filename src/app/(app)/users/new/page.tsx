@@ -8,7 +8,7 @@ export default async function NewUserPage() {
   const t = await getTranslations("users");
   return (
     <>
-      <PageHeader title={t("new")} />
+      <PageHeader title={t("new")} back={{ href: "/users", label: t("title") }} />
       <NewUserForm />
     </>
   );

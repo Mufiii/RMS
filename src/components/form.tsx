@@ -2,6 +2,8 @@
 
 import { type ComponentProps, type ReactNode, useId } from "react";
 import { useFormStatus } from "react-dom";
+import { CircleAlert } from "lucide-react";
+import { Notice } from "@/components/notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,12 +28,12 @@ export function Field({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-err` : undefined}
-        className="h-10"
         {...inputProps}
       />
       {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       {error && (
-        <p id={`${id}-err`} className="text-sm text-destructive">
+        <p id={`${id}-err`} className="flex items-center gap-1.5 text-sm text-destructive">
+          <CircleAlert className="size-4 shrink-0" aria-hidden />
           {error}
         </p>
       )}
@@ -61,7 +63,7 @@ export function SelectField({
         id={id}
         name={name}
         aria-invalid={error ? true : undefined}
-        className="h-10 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
+        className="h-10 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
         {...props}
       >
         {options.map((o) => (
@@ -70,7 +72,12 @@ export function SelectField({
           </option>
         ))}
       </select>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="flex items-center gap-1.5 text-sm text-destructive">
+          <CircleAlert className="size-4 shrink-0" aria-hidden />
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -87,14 +94,8 @@ export function SubmitButton({ children, className, disabled, ...props }: Compon
 export function FormMessage({ message, ok }: { message?: string; ok?: boolean }) {
   if (!message) return null;
   return (
-    <p
-      role={ok ? "status" : "alert"}
-      className={cn(
-        "rounded-lg px-3 py-2 text-sm",
-        ok ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-destructive/10 text-destructive",
-      )}
-    >
+    <Notice tone={ok ? "success" : "error"} className="mb-0">
       {message}
-    </p>
+    </Notice>
   );
 }

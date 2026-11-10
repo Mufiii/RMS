@@ -4,6 +4,7 @@ import { Plus, Search } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { businessToday } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { requirePagePermission } from "@/modules/auth/session";
@@ -28,14 +29,16 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/orders/
     const results = await pickCustomers(q);
     return (
       <>
-        <PageHeader title={t("new")}>{t("chooseCustomerHint")}</PageHeader>
+        <PageHeader title={t("new")} back={{ href: "/orders", label: t("title") }}>
+          {t("chooseCustomerHint")}
+        </PageHeader>
         {customer && !customer.isActive && (
-          <p role="alert" className="mb-4 max-w-xl rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-300">
+          <Notice tone="warning" className="max-w-3xl">
             {te("customerInactive", { name: customer.name })}{" "}
             <Link href={`/customers/${customer.id}`} className="underline underline-offset-4">
               {t("customerPage")}
             </Link>
-          </p>
+        </Notice>
         )}
         <form role="search" action="/orders/new" className="mb-4 flex max-w-xl gap-2">
           <Input
@@ -89,7 +92,7 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/orders/
   const products = await issuableProducts();
   return (
     <>
-      <PageHeader title={t("new")} />
+      <PageHeader title={t("new")} back={{ href: "/orders", label: t("title") }} />
       <NewOrderForm
         customer={{ id: customer.id, name: customer.name, phone: formatPhone(customer.phone), address: customer.address }}
         products={products}

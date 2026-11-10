@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { ArrowLeft, CircleCheck, TriangleAlert } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/page-header";
+import { Notice } from "@/components/notice";
 import { requirePagePermission } from "@/modules/auth/session";
 import { reconcile } from "@/modules/inventory/service";
 import type { Counters } from "@/modules/inventory/client-safe";
@@ -17,25 +17,15 @@ export default async function ReconcilePage() {
 
   return (
     <>
-      <Link href="/products" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" />
-        {t("products.title")}
-      </Link>
-      <PageHeader title={t("stock.reconcileTitle")}>{t("stock.reconcileIntro")}</PageHeader>
+      <PageHeader title={t("stock.reconcileTitle")} back={{ href: "/products", label: t("products.title") }}>{t("stock.reconcileIntro")}</PageHeader>
 
       {bad.length === 0 ? (
-        <p role="status" className="mb-4 flex max-w-3xl items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-          <CircleCheck className="size-4" />
-          {t("stock.reconcileAllOk", { count: rows.length })}
-        </p>
+        <Notice tone="success">{t("stock.reconcileAllOk", { count: rows.length })}</Notice>
       ) : (
-        <p role="alert" className="mb-4 flex max-w-3xl items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          <TriangleAlert className="size-4" />
-          {t("stock.reconcileProblems", { count: bad.length })}
-        </p>
+        <Notice tone="error">{t("stock.reconcileProblems", { count: bad.length })}</Notice>
       )}
 
-      <div className="max-w-4xl rounded-xl border">
+      <div className="overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_oklch(0.2_0.02_262/0.05)]">
         <Table>
           <TableHeader>
             <TableRow>

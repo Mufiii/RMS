@@ -27,7 +27,7 @@ export function NewOrderForm({
   const v = state.values ?? {};
   const err = state.fieldErrors ?? {};
   return (
-    <Card className="max-w-2xl">
+    <Card className="max-w-3xl">
       <CardContent>
         <form action={action} className="grid gap-4">
           <input type="hidden" name="customerId" value={customer.id} />

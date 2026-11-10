@@ -11,6 +11,7 @@ async function loginStaff(page: Page) {
 }
 
 const main = (page: Page) => page.locator("main");
+const rows = (page: Page) => page.getByTestId("customer-table").locator("tbody tr");
 
 test("staff add a customer and see their details page", async ({ page }) => {
   await loginStaff(page);
@@ -70,20 +71,20 @@ test("search by name, phone and customer number; an unknown phone offers a prefi
   await loginStaff(page);
   await page.goto("/customers");
   const search = page.getByRole("searchbox");
-  const list = main(page).locator("ul");
+  const list = page.getByTestId("customer-table");
 
   await search.fill("brother");
   await search.press("Enter");
-  await expect(list.locator("li")).toHaveCount(1);
+  await expect(list.locator("tbody tr")).toHaveCount(1);
   await expect(list).toContainText("Ravi's brother");
 
   await search.fill("98470 12345");
   await search.press("Enter");
-  await expect(list.locator("li")).toHaveCount(2);
+  await expect(list.locator("tbody tr")).toHaveCount(2);
 
   await search.fill("#1");
   await search.press("Enter");
-  await expect(list.locator("li")).toHaveCount(1);
+  await expect(list.locator("tbody tr")).toHaveCount(1);
   await expect(list).toContainText("Ravi Kumar");
 
   await search.fill("9999911111");
@@ -112,15 +113,65 @@ test("deactivated customers move to the Inactive filter and can be reactivated",
   await page.getByRole("button", { name: "Deactivate customer" }).click();
   await expect(page.locator("p[role=status]").filter({ hasText: "Customer deactivated" })).toBeVisible();
 
-  await page.goto("/customers");
-  await expect(main(page).locator("ul li")).toHaveCount(1);
-  await main(page).getByRole("link", { name: "Inactive" }).click();
-  await expect(main(page).locator("ul li")).toHaveCount(1);
-  await expect(main(page).locator("ul")).toContainText("Ravi's brother");
+  await page.goto("/customers"); // "All" is the default
+  await expect(rows(page)).toHaveCount(2);
+  await main(page).getByRole("link", { name: "Active", exact: true }).click();
+  await expect(rows(page)).toHaveCount(1);
+  await main(page).getByRole("link", { name: "Inactive", exact: true }).click();
+  await expect(rows(page)).toHaveCount(1);
+  await expect(page.getByTestId("customer-table")).toContainText("Ravi's brother");
 
   await page.goto("/customers/2");
   await page.getByRole("button", { name: "Reactivate customer" }).click();
   await expect(page.locator("p[role=status]").filter({ hasText: "Customer reactivated" })).toBeVisible();
+});
+
+test("summary cards and the ⋮ menu; staff cannot delete", async ({ page }) => {
+  await loginStaff(page);
+  await page.goto("/customers");
+  await expect(page.getByTestId("card-customers")).toContainText("2");
+  await expect(page.getByTestId("card-active")).toContainText("None inactive");
+  await expect(page.getByTestId("card-rentals")).toContainText("0");
+  await expect(page.getByTestId("card-outstanding")).toContainText("₹0.00");
+  await expect(rows(page).first()).toContainText("Active");
+
+  await page.getByRole("button", { name: "Actions for Ravi Kumar" }).click();
+  await expect(page.getByRole("menuitem", { name: "View details" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Delete customer" })).toHaveCount(0);
+  await page.getByRole("menuitem", { name: "Edit customer" }).click();
+  await expect(page).toHaveURL(/\/customers\/1\/edit$/);
+});
+
+test("admin deletes a customer with no history after confirming", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Username").fill("manager");
+  await page.getByLabel("Password").fill("manager-pass");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.goto("/customers/new");
+  await page.getByLabel("Name").fill("Typo Entry");
+  await page.getByLabel("Phone", { exact: true }).fill("9847055555");
+  await page.getByRole("button", { name: "Create" }).click();
+  await expect(page).toHaveURL(/\/customers\/\d+\?saved=created$/);
+
+  await page.goto("/customers");
+  await expect(rows(page)).toHaveCount(3);
+  const openDelete = async () => {
+    await page.getByRole("button", { name: "Actions for Typo Entry" }).click();
+    await page.getByRole("menuitem", { name: "Delete customer" }).click();
+  };
+  await openDelete();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("Delete Typo Entry?");
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(rows(page)).toHaveCount(3);
+
+  await openDelete();
+  await dialog.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page.getByText("Customer deleted")).toBeVisible();
+  await expect(rows(page)).toHaveCount(2);
+  await expect(page.getByTestId("customer-table")).not.toContainText("Typo Entry");
 });
 
 test("customer pages work in Malayalam", async ({ page }) => {

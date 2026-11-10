@@ -50,13 +50,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         {t(`hint.${name}`)}
       </PageHeader>
 
-      <nav className="mb-4 flex flex-wrap gap-2" aria-label={t("title")}>
+      <nav className="mb-4 flex w-fit max-w-full flex-wrap gap-1 rounded-lg bg-muted p-1 text-sm" aria-label={t("title")}>
         {REPORTS.map((r) => (
           <Link
             key={r}
             href={`/reports?r=${r}${RANGED.has(r) && qs ? `&${qs}` : ""}`}
             aria-current={r === name ? "page" : undefined}
-            className={buttonVariants({ variant: r === name ? "default" : "outline", size: "sm" })}
+            className={cn(
+              "inline-flex min-h-8 items-center rounded-md px-3 py-1 font-medium transition-colors duration-150",
+              r === name ? "bg-card text-primary shadow-[0_1px_2px_oklch(0.2_0.02_262/0.12)]" : "text-muted-foreground hover:text-foreground",
+            )}
           >
             {t(`tabs.${r}`)}
           </Link>
@@ -64,15 +67,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
       </nav>
 
       {ranged && (
-        <form method="get" className="mb-4 flex max-w-xl flex-wrap items-end gap-2">
+        <form method="get" className="mb-4 flex flex-wrap items-end gap-2">
           <input type="hidden" name="r" value={name} />
           <label className="grid gap-1.5 text-sm font-medium">
             {t("from")}
-            <Input type="date" name="from" defaultValue={range.from} max={today} className="h-10" />
+            <Input type="date" name="from" defaultValue={range.from} max={today} className="w-44" />
           </label>
           <label className="grid gap-1.5 text-sm font-medium">
             {t("to")}
-            <Input type="date" name="to" defaultValue={range.to} max={today} className="h-10" />
+            <Input type="date" name="to" defaultValue={range.to} max={today} className="w-44" />
           </label>
           <Button type="submit" variant="outline" size="lg">
             {t("show")}
@@ -80,16 +83,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         </form>
       )}
 
-      <Card className="max-w-full">
+      <Card className="max-w-full py-0">
         <CardContent className="overflow-x-auto px-0">
           {table.rows.length === 0 ? (
-            <p className="px-4 text-sm text-muted-foreground">{t("empty")}</p>
+            <p className="px-5 py-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
           ) : (
             <table className="w-full min-w-max text-sm" data-testid="report">
               <thead>
-                <tr className="border-b text-left text-xs text-muted-foreground">
+                <tr className="border-b bg-muted/60 text-left text-xs tracking-wide text-muted-foreground uppercase">
                   {table.columns.map((c) => (
-                    <th key={c.key} scope="col" className={cn("px-3 py-2 font-medium whitespace-nowrap", NUMERIC.has(c.kind) && "text-right")}>
+                    <th key={c.key} scope="col" className={cn("px-3 py-2.5 font-semibold whitespace-nowrap first:pl-5 last:pr-5", NUMERIC.has(c.kind) && "text-right")}>
                       {p.header(c.key)}
                     </th>
                   ))}

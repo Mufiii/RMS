@@ -48,7 +48,10 @@
     "forbiddenTitle": "Access denied",
     "forbiddenBody": "Your account does not have permission to open this page.",
     "goHome": "Go to start page",
-    "signedInAs": "Signed in as {name}"
+    "signedInAs": "Signed in as {name}",
+    "panelOrders": "Issue, return and bill rentals",
+    "panelMoney": "Payments, receipts and invoices",
+    "panelLanguage": "Works in English and Malayalam"
   },
   "roles": {
     "ADMIN": "Admin",
@@ -96,25 +99,67 @@
   "dashboard": {
     "title": "Dashboard",
     "asOf": "Today, {date}",
-    "piecesOut": "Items out now",
-    "openOrders": "{count, plural, =1 {on 1 open order} other {on # open orders}}",
-    "todayNet": "Collected today",
-    "todayDetail": "{count, plural, =0 {no receipts} =1 {1 receipt} other {# receipts}} · refunds {refunded}",
-    "billedDue": "Billed, still due",
-    "customersOwing": "{count, plural, =0 {no customers} =1 {1 customer} other {# customers}}",
-    "openSoFar": "Open orders so far",
-    "openSoFarHint": "rent to today − advances",
-    "creditHeld": "Paid in excess {amount} (refundable)",
-    "longTitle": "Long rentals: {days}+ days out",
-    "longHint": "Oldest first. Call to follow up. The number of days can be changed in Settings.",
+    "refresh": "Refresh",
+    "reportsLink": "All reports",
+    "call": "Call",
+    "rentalItemsTitle": "Total Rental Items",
+    "openRentSub": "{amount} open rent",
+    "customersTitle": "Total Customers",
+    "newThisMonth": "+{count} this month",
+    "activeRentalsTitle": "Active Rentals",
+    "overdueOrders": "{count, plural, =0 {none overdue} =1 {1 overdue} other {# overdue}}",
+    "dueFrom": "{amount} unpaid",
+    "todayTitle": "Today's Collection",
+    "todayInvoices": "{count, plural, =0 {0 invoices} =1 {1 invoice} other {# invoices}}",
+    "refunded": "{amount} refunded",
+    "monthTitle": "This Month's Collection",
+    "noLastMonth": "No last-month data",
+    "vsLastMonth": "vs last month",
+    "statusTitle": "Rental status",
+    "stockTotal": "pieces owned",
+    "stock": {
+      "available": "Available",
+      "onRent": "On rent",
+      "tooLong": "Out {days}+ days",
+      "repair": "Under repair"
+    },
+    "trendTitle": "Money collected, last 6 months",
+    "trendHint": "Payments received minus refunds",
+    "trendChip": "Last 6 months",
+    "collected": "Collected",
+    "itemTitle": "Revenue by item",
+    "itemHint": "Rent and damage billed in the last 6 months, before discounts",
+    "itemCenter": "last 6 months",
+    "itemOthers": "Others",
+    "itemNone": "No invoices in the last 6 months.",
+    "itemDiscount": "Before discounts of {amount}",
+    "recentRentalsTitle": "Recent rentals",
+    "viewAll": "View all",
+    "noRentals": "No rentals yet.",
+    "overdueTitle": "Overdue rentals",
+    "overdueHint": "Out {days}+ days and not yet returned",
     "longNone": "Nothing has been out {days} days or more.",
     "days": "{count, plural, =1 {1 day} other {# days}}",
-    "since": "since {date}",
     "rentSoFar": "{amount} so far",
-    "weekTitle": "Collections, last 7 days",
-    "net": "Net",
-    "reportsLink": "All reports",
-    "call": "Call"
+    "col": {
+      "order": "Order",
+      "customer": "Customer",
+      "item": "Item",
+      "from": "From",
+      "to": "To",
+      "status": "Status",
+      "outSince": "Out since",
+      "daysOut": "Days out"
+    },
+    "state": {
+      "out": "Out",
+      "partReturned": "Part returned",
+      "returned": "Returned",
+      "tooLong": "Too long"
+    },
+    "itemsAvailable": "{count} available",
+    "itemsOnRent": "{count} on rent",
+    "todayBilled": "{billed} billed"
   },
   "validation": {
     "required": "This field is required",
@@ -163,7 +208,8 @@
     "customers": {
       "notFound": "Customer not found",
       "duplicatePhone": "This phone number is already used",
-      "hasOpenOrders": "{count, plural, =1 {This customer has an open order} other {This customer has # open orders}} — close or cancel first"
+      "hasOpenOrders": "{count, plural, =1 {This customer has an open order} other {This customer has # open orders}} — close or cancel first",
+      "hasHistory": "This customer has rentals or payments on record and can't be deleted — mark them inactive instead"
     },
     "products": {
       "notFound": "Product not found",
@@ -313,7 +359,33 @@
     "outstandingBilled": "Billed, still due",
     "outstandingCredit": "Paid in excess (refundable)",
     "outstandingOpen": "Open orders so far (rent to today − advances)",
-    "outstandingNone": "Nothing outstanding."
+    "outstandingNone": "Nothing outstanding.",
+    "cardTotal": "Total customers",
+    "cardActive": "Active customers",
+    "cardInactive": "{count, plural, =0 {None inactive} other {# inactive}}",
+    "cardRentals": "Total rentals",
+    "cardRentalsHint": "All orders, cancelled left out",
+    "cardOutstanding": "Total outstanding",
+    "cardOwing": "{count, plural, =0 {Nobody owes} =1 {1 customer owes} other {# customers owe}}",
+    "colName": "Customer name",
+    "colContact": "Contact details",
+    "colRentals": "Total rentals",
+    "colOutstanding": "Outstanding",
+    "colActions": "Actions",
+    "showing": "Showing {from}–{to} of {total}",
+    "actionsFor": "Actions for {name}",
+    "viewDetails": "View details",
+    "delete": "Delete customer",
+    "deleteTitle": "Delete {name}?",
+    "deleteHint": "This permanently removes the customer. It can't be undone.",
+    "deleteConfirm": "Delete",
+    "deleted": "Customer deleted",
+    "cancel": "Cancel",
+    "close": "Close",
+    "cannotDeleteTitle": "{name} can't be deleted",
+    "cannotDeleteHint": "This customer has rentals or payments on record, which must be kept. Mark them inactive instead: they stay in history but can't take new orders.",
+    "cannotDeleteInactive": "This customer has rentals or payments on record, which must be kept. They are already inactive.",
+    "markInactive": "Mark inactive"
   },
   "products": {
     "title": "Products",
@@ -709,7 +781,9 @@
     "totalOut": "Refunded",
     "net": "Net",
     "customer": "Customer",
-    "order": "Order"
+    "order": "Order",
+    "byMode": "By payment mode",
+    "entries": "Receipts and refunds"
   },
   "print": {
     "print": "Print",
@@ -876,5 +950,24 @@
     "removeLogo": "Remove logo",
     "logoSaved": "Logo saved",
     "logoRemoved": "Logo removed"
+  },
+  "quick": {
+    "title": "Quick actions",
+    "newOrder": {
+      "label": "New order",
+      "hint": "Issue items to a customer"
+    },
+    "returnOrPay": {
+      "label": "Return or payment",
+      "hint": "Open the customer's order"
+    },
+    "newCustomer": {
+      "label": "New customer",
+      "hint": "Add name and phone"
+    },
+    "todayPayments": {
+      "label": "Today's payments",
+      "hint": "Cash, UPI and others"
+    }
   }
 }
