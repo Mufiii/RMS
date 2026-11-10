@@ -36,3 +36,14 @@ const inr = new Intl.NumberFormat("en-IN", {
 export function formatINR(paise: Paise): string {
   return inr.format(paise / 100);
 }
+
+/** Short Indian form for charts: 5282000 paise → "₹52.82 K" style units (K, L, Cr). Display only, never totalled. */
+export function compactINR(paise: Paise): string {
+  const r = paise / 100;
+  const a = Math.abs(r);
+  const fmt = (n: number, unit: string) => `₹${Number(n.toFixed(2))}${unit}`;
+  if (a >= 1e7) return fmt(r / 1e7, " Cr");
+  if (a >= 1e5) return fmt(r / 1e5, " L");
+  if (a >= 1e3) return fmt(r / 1e3, " K");
+  return `₹${Math.round(r)}`;
+}

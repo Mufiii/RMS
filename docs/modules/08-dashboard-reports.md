@@ -6,14 +6,30 @@ Admin only. Staff have no dashboard and no reports: pages show the 403 page, and
 
 ## Dashboard `/dashboard`
 
-| Part | What |
+Five summary tiles, three charts, then two tables.
+
+| Tile | Figure | Sub-lines |
+|---|---|---|
+| **Total Rental Items** | Pieces owned | available · on rent; rent so far on open orders |
+| **Total Customers** | Active customers | new since the 1st of this month (IST), as `+N this month` |
+| **Active Rentals** | Open orders | orders with an overdue line (out at least the threshold); billed unpaid |
+| **Today's Collection** | Money in − refunds today | invoices issued today and their billed total; refunds when any |
+| **This Month's Collection** | Money in − refunds, month to date | % vs **the same number of days** of last month (shows "No last-month data" when last month had nothing) |
+
+Tile sub-lines are kept to about three words each so they never wrap into long text.
+
+| Chart | What |
 |---|---|
-| **Items out now** | Pieces out across open orders, and how many open orders. Opens the open-orders list |
-| **Collected today** | Net money today (money in − refunds), the number of receipts and the refunds. Opens Payments |
-| **Billed, still due** | Unpaid balance on final invoices, and how many customers owe. Shows "paid in excess (refundable)" when any |
-| **Open orders so far** | Rent accrued to today on open orders, minus their advances |
-| **Long rentals: 30+ days out** | Every item out for the threshold or more, **oldest first**: customer (links to the customer), product, quantity or serial, days out (issue day = day 1, as for rent), order, rent so far, and a tap-to-call phone number. Rentals have no due date, so age is the signal to follow up |
-| **Collections, last 7 days** | Net per day as plain bars (no chart library), with a link to the Collections report |
+| **Rental status** | Every piece owned: available, on rent, out too long (the threshold), under repair |
+| **Money collected, last 6 months** | Net per month (money in − refunds), current month highlighted |
+| **Revenue by item** | Rent + damage billed on **issued** invoices in the last 6 months, per product (snapshot name), top 4 + Others. **Before discounts**; the discount total is shown under it |
+
+| Table | What |
+|---|---|
+| **Recent rentals** | Latest 6 issue lines: order, customer, item, from, to, state (out, part returned, returned, too long) |
+| **Overdue rentals** | Items out for the threshold or more, **oldest first**: customer, item, out since, days out (issue day = day 1, as for rent), rent so far, and a Call link. Rentals have no due date, so age is the signal to follow up |
+
+Revenue means money collected everywhere except the item chart, which can only be traced to invoices.
 
 The **threshold** is `settings.long_rental_days` (default **30**, CHECK 1–365; confirmed with the client 2026-11-07). Its edit screen comes with Settings in Step 9.
 

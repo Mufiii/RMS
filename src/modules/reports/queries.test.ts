@@ -12,7 +12,7 @@ import { recordReturn } from "@/modules/returns/service";
 import { createInvoice } from "@/modules/invoices/service";
 import { moneySchema } from "@/modules/payments/schema";
 import { recordPayment, recordRefund, voidPayment } from "@/modules/payments/service";
-import { dashboard, longRentals, monthsBack } from "./dashboard";
+import { dashboard, longRentals, monthToDate, monthsBack, overdueOrderCount, revenueByItem } from "./dashboard";
 import { parseRange, runReport } from "./queries";
 
 const today = businessToday();
@@ -82,10 +82,9 @@ describe("dashboard", () => {
       [o1.orderNo, "Ravi", "returned", addDays(today, -9), addDays(today, -5)],
       [o2.orderNo, "Anu", "tooLong", addDays(today, -34), null],
     ]);
-    expect(d.recentPayments.map((p) => [p.customer.name, p.mode, p.amount])).toEqual([
-      ["Anu", "CASH", 10000],
-      ["Ravi", "UPI", 15000],
-    ]);
+    expect(d.overdueOrders).toBe(1);
+    expect(d.customers).toEqual({ active: 2, newThisMonth: 2 });
+    expect(d.today.invoices).toEqual({ count: 1, billed: 40000 }); // 10 × ₹8 × 5 days
 
     await db.settings.update({ where: { id: 1 }, data: { longRentalDays: 40 } });
     d = await dashboard(today);
@@ -111,6 +110,53 @@ describe("dashboard", () => {
     await recordRefund(admin, moneySchema.parse({ orderId: o.id, amount: "20", mode: "CASH" }));
     const d = await dashboard(today);
     expect(d.months.map((m) => m.net)).toEqual([0, 0, 0, 30000, 0, -2000]);
+  });
+});
+
+describe("revenueByItem", () => {
+  it("bills rent + damage per item from ISSUED invoices; top 4 by amount, the rest in Others", async () => {
+    const cat = await createCategory(admin, { name: "Extra", nameMl: null });
+    for (let i = 1; i <= 5; i++) {
+      const p = await createProduct(admin, newProductSchema.parse({ categoryId: cat.id, name: `P${i}`, tracking: "QUANTITY", dailyRate: "10", openingQty: 10 }));
+      const o = await order(ravi, 1, [{ productId: p.id, quantity: i }]); // i pieces, 2 days (issue day + today) → ₹20 × i
+      const line = await db.issueLine.findFirstOrThrow({ where: { orderId: o.id } });
+      await recordReturn(admin, { orderId: o.id, date: today, notes: null, entries: [returnEntrySchema.parse({ issueLineId: line.id, good: i })] });
+      await createInvoice(admin, { orderId: o.id, discount: null, discountReason: null });
+    }
+    const r = await revenueByItem(today, 6);
+    expect(r.items.map((x) => [x.name, x.amount])).toEqual([
+      ["P5", 10000],
+      ["P4", 8000],
+      ["P3", 6000],
+      ["P2", 4000],
+    ]);
+    expect([r.others, r.total, r.discount]).toEqual([2000, 30000, 0]);
+  });
+});
+
+describe("monthToDate", () => {
+  it("net collected this month vs the same number of days last month", async () => {
+    const o = await order(ravi, 0, [{ productId: props.id, quantity: 1 }]);
+    await db.payment.create({
+      data: { receiptNo: "MTD-OLD", orderId: o.id, customerId: ravi, type: "ADVANCE", mode: "CASH", amount: "100", paymentDate: toDbDate(monthsBack(today, 1)), receivedById: admin.id },
+    });
+    await pay(o.id, "300");
+    const m = await monthToDate(today);
+    // Last month's first day is always inside the comparison window, so ₹100 is the baseline.
+    expect(m).toEqual({ current: 30000, previous: 10000, changePct: 200 });
+  });
+});
+
+describe("overdueOrderCount", () => {
+  it("counts open orders with an overdue line, not lines", async () => {
+    const units = await db.productUnit.findMany({ where: { productId: gen.id }, orderBy: { id: "asc" } });
+    // One order, two overdue lines (props + a generator), and a second order: 3 lines, 2 orders.
+    await order(ravi, 40, [
+      { productId: props.id, quantity: 2 },
+      { productId: gen.id, unitIds: [units[0].id] },
+    ]);
+    await order(anu, 40, [{ productId: props.id, quantity: 3 }]);
+    expect(await overdueOrderCount(today, 30)).toBe(2);
   });
 });
 

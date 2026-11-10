@@ -2,12 +2,12 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, Label, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { formatINR } from "@/lib/money";
+import { compactINR, formatINR } from "@/lib/money";
 
 export type Slice = { key: string; label: string; value: number; color: string };
 
-/** Pieces owned by state, total in the hole. Zero slices are kept out of the ring but stay in the legend. */
-export function StockDonut({ slices, total, totalLabel }: { slices: Slice[]; total: number; totalLabel: string }) {
+/** Donut with a centre figure. Zero slices are left out of the ring; the caller lists them in the legend. */
+export function Donut({ slices, center, centerLabel, emptyLabel }: { slices: Slice[]; center: string; centerLabel: string; emptyLabel: string }) {
   const config = Object.fromEntries(slices.map((s) => [s.key, { label: s.label, color: s.color }])) satisfies ChartConfig;
   const data = slices.filter((s) => s.value > 0);
   return (
@@ -20,11 +20,11 @@ export function StockDonut({ slices, total, totalLabel }: { slices: Slice[]; tot
             content={({ viewBox }) =>
               viewBox && "cx" in viewBox ? (
                 <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) - 6} className="fill-foreground text-2xl font-semibold">
-                    {total}
+                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) - 6} className="fill-foreground text-xl font-semibold">
+                    {data.length ? center : emptyLabel}
                   </tspan>
-                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 16} className="fill-muted-foreground text-[11px]">
-                    {totalLabel}
+                  <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 14} className="fill-muted-foreground text-[11px]">
+                    {centerLabel}
                   </tspan>
                 </text>
               ) : null
@@ -36,17 +36,6 @@ export function StockDonut({ slices, total, totalLabel }: { slices: Slice[]; tot
   );
 }
 
-/** ₹ in Indian short form for axis ticks: 150000 paise → "₹1.5K", 1,20,00,000 paise → "₹1.2L". */
-function shortINR(paise: number): string {
-  const r = paise / 100;
-  const a = Math.abs(r);
-  const fmt = (n: number, unit: string) => `₹${Number(n.toFixed(1))}${unit}`;
-  if (a >= 1e7) return fmt(r / 1e7, "Cr");
-  if (a >= 1e5) return fmt(r / 1e5, "L");
-  if (a >= 1e3) return fmt(r / 1e3, "K");
-  return `₹${Math.round(r)}`;
-}
-
 /** Monthly money collected (paise); the current month stands out. */
 export function CollectionsBars({ data, seriesLabel }: { data: { month: string; label: string; net: number }[]; seriesLabel: string }) {
   const config = { net: { label: seriesLabel, color: "var(--dash-blue)" } } satisfies ChartConfig;
@@ -55,7 +44,7 @@ export function CollectionsBars({ data, seriesLabel }: { data: { month: string; 
       <BarChart data={data} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-        <YAxis tickLine={false} axisLine={false} width={56} tickFormatter={shortINR} />
+        <YAxis tickLine={false} axisLine={false} width={64} tickFormatter={compactINR} />
         <ChartTooltip
           cursor={{ fill: "var(--muted)", opacity: 0.6 }}
           content={
